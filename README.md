@@ -16,35 +16,44 @@ How does it work?
 
 tootgroup.py has to be set up on a computer and run periodically. It reads the
 notifications of the Mastodon account it is connected to and filters them for
-direct messages from users that the group account follows.
+messages to repost. There are two methods of creating a group post. One or both
+of them can be enabled or disabled during configuration.
 
-tootgroup.py then extracts the status text as well as media files and creates a
-new public toot originating from the group account.
+1. Public mentions of group members that include a configurable trigger hashtag
+are simply retooted. The default trigger is "#rep"
+
+2. tootgroup.py can also look for direct messages from group members. It then
+extracts the status text as well as media files and creates a new public toot
+directly from the group account. The originating user will not be shown publicly
+but can still be seen by the group and instance administrators.
+
+If both repost methods are disabled, tootgroup.py will still run but not repost
+anything.
 
 
 How to set up?
 --------------
 
 tootgroup.py is still largely untested and in development. For the moment it has
-to be set up and configured manually by a person who understands the code nd what
-it is doing. This will become MUCH MORE CONVINIENT in the future. 
+to be set up and configured manually by a person who understands the code and
+what it is doing. This will become MUCH MORE CONVINIENT in the future. 
 
-1. You need https://github.com/halcy/Mastodon.py to run.
-Install it via your Operating system's package manager, pip or even manually
+1. You require https://github.com/halcy/Mastodon.py to run.
+Install it via your operating system's package manager, pip or even manually
 
 2. You need an account on any Mastodon instance/server that will act as your
 group account. Think about if you should mark it as a "Bot".
 
-3. At the top of the tootgroup.py script change:
+3. At the beginning of the tootgroup.py script change:
 ```my_mastodon_instance='TO_YOUR_MASTODON_INSTANCE'```
 
-4. At the top of the tootgroup.py script you will also find the registration/first
-run code block. It is marked thus. Have to have your login and password ready. With
-that the tootgroup.py script can register itself as an authorised app in the
-Mastodon account settings.
+4. At the beginning of the tootgroup.py script you will also find the
+registration/first run code block. It is marked thus. You have to have your login
+and password ready. With that the tootgroup.py script can register itself as an
+authorised app in the Mastodon account settings.
 
-5. Run tootgroup.py from the command line in a directory that it can write to. Input
-all required information and register with your Mastodon instance.
+5. Run tootgroup.py from the command line in a directory that it can write to.
+Input all required information and register with your Mastodon instance.
 
 6. When setup is done you MUST comment-out the setup code block again or otherwise
 tootgroup.py will re-register every time it is run! If this happens, you can still
@@ -96,14 +105,5 @@ Planned Features and Whishlist items
 ##### TODO: push-notifications feasible?
       Look into push notifications so that tootgroup.py would not have to be
       run via cron periodically
-
-##### TODO: retoot-mode
-      tootgroup.py only listens for direct messages from followed users and
-      creates new toots from them, mentioning the originating user if there is
-      enouth room in the toot. This cleans up the timelines of the original
-      posters but some may prefer a more visible functionality. Retoot-mode
-      would just retoot openly visible (public) toots from followed users.
-      This is also simpler to implement and does not need to store temporary
-      files on the machine tootgroup.py is running on.
 
 

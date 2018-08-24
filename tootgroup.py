@@ -1,7 +1,7 @@
 ## coding: utf-8
 ##
 ## tootgroup.py
-## Version 0.1
+## Version 0.2
 ##
 ##
 ## Andreas Schreiner
@@ -19,8 +19,15 @@ import requests
 from mastodon import Mastodon
 
 
+#
+# Configuration Variables
+#
 # CHANGE HERE for your mastodon instance (e.g. https://mastodon.social)
 my_mastodon_instance='https://chaos.social'
+
+accept_DMs = True
+accept_tagged_mentions = True
+mention_tag = "rep"
 
 
 ## ONLY FOR FIRST RUN - this sets up app credentials for tootgroup.py
@@ -47,6 +54,7 @@ my_mastodon_instance='https://chaos.social'
 #)
 #sys.exit(0)
 ## END OF SETUP BLOCK
+
 
 
 #
@@ -102,33 +110,49 @@ my_last_toot_time = mastodon.account_statuses(my_account_id)[0].created_at
 #
 # TODO: check for pagination should the list become too long
 my_notifications = mastodon.notifications()
-my_retoot_candidates = []
+my_retoots = []
+my_dm_reposts = []
 for notification in my_notifications:
     # Only consider notifications that happened after the groups last toot
     # We have to use the time of notification and not the "status" directly since
     # not all notification types do have a status.
     if notification.created_at > my_last_toot_time:
-        # Only direct messages
-        if notification.type == "mention" and notification.status.visibility == "direct":
-            # Only from people that are followed by this group
-            if notification.account.id in my_group_member_ids:
-                my_retoot_candidates.append(notification)
+        
+        # Is retooting of public mentions configured? - If yes then:
+        # Look for public mentions that include the trigger hashtag.
+        if accept_tagged_mentions:
+            if notification.type == "mention" and notification.status.visibility == "public":
+                # Only from people that are followed by this group
+                if notification.account.id in my_group_member_ids:
+                    # Only if the mention includes the tootgroup hashtag
+                    for each_tag in notification.status.tags:
+                        if mention_tag in each_tag.name:
+                            my_retoots.append(notification)
+
+        # Is reposting of direct messages configured? - if yes then:
+        # Look for direct messages
+        if accept_DMs:
+            if notification.type == "mention" and notification.status.visibility == "direct":
+                # Only from people that are followed by this group
+                if notification.account.id in my_group_member_ids:
+                    my_dm_reposts.append(notification)
 
 
+# For retooting of public mentions
+for retoot in my_retoots:
+    mastodon.status_reblog(retoot.status.id)
+
+
+# For reposting of direct messages
 # Assemble new group toots and post them to the group timeline
-for retoot in my_retoot_candidates:
+for repost in my_dm_reposts:
     # Remove html tags from the status content
-    status = re.sub("<.*?>", "", retoot.status.content)
-    
-    # If there is enough room add the originating user to the toot   
-    toot_via = "\n via @" + retoot.account.acct
-    if len(status + toot_via) <= 500:
-        status = status + toot_via
+    status = re.sub("<.*?>", "", repost.status.content)
     in_reply_to_id = None
-    # Get media files and prepare the for re-use in new toot
-    media_ids = media_toot_again(retoot.status.media_attachments)
-    sensitivity = retoot.status.sensitive
+    # Get media files and prepare them for re-use in new toot
+    media_ids = media_toot_again(repost.status.media_attachments)
+    sensitivity = repost.status.sensitive
     visibility = "public"
-    spoiler_text = retoot.status.spoiler_text
+    spoiler_text = repost.status.spoiler_text
     idempotency_key = None
     mastodon.status_post(status, in_reply_to_id, media_ids, sensitivity, visibility, spoiler_text, idempotency_key)
