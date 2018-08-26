@@ -149,7 +149,6 @@ for repost in my_dm_reposts:
     status = re.sub("<.*?>", "", repost.status.content)
     # Remove @metafunk from the text as well as the double spaces that are left
     status = re.sub("@metafunk", "", status)
-    status = re.sub("  ",  " ", status)
     in_reply_to_id = None
     # Get media files and prepare them for re-use in new toot
     media_ids = media_toot_again(repost.status.media_attachments)
