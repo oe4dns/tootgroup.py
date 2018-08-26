@@ -1,6 +1,10 @@
 # Change Log
 
-## [0.2] - 2018-
+## [0.3] upcoming
+- Retoot mode is no longer triggered by using a specific hastag, but by preceding
+the mention with an Exclamation Mark like "!@mastodon"
+
+## [0.2] - 2018-08-24
 ### Added
 - Configurable retoot mode
 Public mentions from group members are now retooted if they include a trigger

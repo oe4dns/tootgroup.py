@@ -12,7 +12,6 @@
 ## See attached LICENSE file.
 ##
 
-
 import os
 import re
 import requests
@@ -26,8 +25,7 @@ from mastodon import Mastodon
 my_mastodon_instance='https://chaos.social'
 
 accept_DMs = True
-accept_tagged_mentions = True
-mention_tag = "rep"
+accept_retoots = True
 
 
 ## ONLY FOR FIRST RUN - this sets up app credentials for tootgroup.py
@@ -94,6 +92,7 @@ mastodon = Mastodon(
 
 # Get the tootgroups account ID and use it to fetch the IDs
 # of all users that are followed by  it.
+my_account_username = mastodon.account_verify_credentials().username
 my_account_id = mastodon.account_verify_credentials().id
 my_group_members = mastodon.account_following(my_account_id)
 my_group_member_ids = []
@@ -118,22 +117,22 @@ for notification in my_notifications:
     # not all notification types do have a status.
     if notification.created_at > my_last_toot_time:
         
-        # Is retooting of public mentions configured? - If yes then:
-        # Look for public mentions that include the trigger hashtag.
-        if accept_tagged_mentions:
+        # Is retooting of public mentions configured?
+        if accept_retoots:
             if notification.type == "mention" and notification.status.visibility == "public":
-                # Only from people that are followed by this group
+                # Only from group members (which means people that are followed by this group)
                 if notification.account.id in my_group_member_ids:
-                    # Only if the mention includes the tootgroup hashtag
-                    for each_tag in notification.status.tags:
-                        if mention_tag in each_tag.name:
-                            my_retoots.append(notification)
+                    # Only if the mention was preceeded by an "!". To check this, html tags have to be removed first.
+                    repost_indicator = "!@" + my_account_username
+                    status = re.sub("<.*?>", "", notification.status.content)
+                    if repost_indicator in status:
+                        my_retoots.append(notification)
 
         # Is reposting of direct messages configured? - if yes then:
         # Look for direct messages
         if accept_DMs:
             if notification.type == "mention" and notification.status.visibility == "direct":
-                # Only from people that are followed by this group
+                # Only from group members (which means people that are followed by this group)
                 if notification.account.id in my_group_member_ids:
                     my_dm_reposts.append(notification)
 
@@ -148,6 +147,9 @@ for retoot in my_retoots:
 for repost in my_dm_reposts:
     # Remove html tags from the status content
     status = re.sub("<.*?>", "", repost.status.content)
+    # Remove @metafunk from the text as well as the double spaces that are left
+    status = re.sub("@metafunk", "", status)
+    status = re.sub("  ",  " ", status)
     in_reply_to_id = None
     # Get media files and prepare them for re-use in new toot
     media_ids = media_toot_again(repost.status.media_attachments)

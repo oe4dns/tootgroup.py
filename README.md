@@ -19,8 +19,8 @@ notifications of the Mastodon account it is connected to and filters them for
 messages to repost. There are two methods of creating a group post. One or both
 of them can be enabled or disabled during configuration.
 
-1. Public mentions of group members that include a configurable trigger hashtag
-are simply retooted. The default trigger is "#rep"
+1. Public mentions of group members are retooted if they preceed the group's
+name with an Exclamation Mark like "!@mastodon"
 
 2. tootgroup.py can also look for direct messages from group members. It then
 extracts the status text as well as media files and creates a new public toot
