@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.4] 2018-0?-??
+- Read and persist configuration
+
 ## [0.3] 2018-08-28
 - Retoot mode is no longer triggered by using a specific hastag, but by preceding
 the mention with an Exclamation Mark like "!@mastodon"
