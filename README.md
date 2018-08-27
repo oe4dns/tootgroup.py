@@ -60,9 +60,9 @@ tootgroup.py will re-register every time it is run! If this happens, you can sti
 clean out all your allowed apps from your Mastodon account setings but try to avoid
 that.
 
-7. Test the funcionality by sending direct messages to your group and manually running
-tootgroup.py. See if everything works as expected. If it does, you can run the script
-periodically via cron and enjoy groop-tooting!
+7. Test the funcionality by sending direct messages and "!@mentions" to your
+group while manually running tootgroup.py. See if everything works as expected.
+If it does, you can run the script periodically via cron and enjoy groop-tooting!
 
 
 

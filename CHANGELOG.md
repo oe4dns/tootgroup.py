@@ -1,8 +1,10 @@
 # Change Log
 
-## [0.3] upcoming
+## [0.3] 2018-08-28
 - Retoot mode is no longer triggered by using a specific hastag, but by preceding
 the mention with an Exclamation Mark like "!@mastodon"
+- Code refactoring and cleanup. tootgroup.py behaves now more like a real
+commandline application.
 
 ## [0.2] - 2018-08-24
 ### Added

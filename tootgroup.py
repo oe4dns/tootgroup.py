@@ -1,6 +1,7 @@
 #!/bin/python3
+
 ## tootgroup.py
-## Version 0.2
+## Version 0.3
 ##
 ##
 ## Andreas Schreiner
@@ -24,6 +25,9 @@ from mastodon import Mastodon
 #import sys
 #
 ## Register app - only once!
+#
+# my_mastodon_instance='YOUR_INSTANCE_HERE'
+#
 #Mastodon.create_app(
 #     'tootgroup.py',
 #     api_base_url = my_mastodon_instance,
@@ -65,7 +69,7 @@ def main():
     )
     
     
-    # Get the group account and all correspoonding information
+    # Get the group account and all corresponding information
     # name, id, group members (== accounts followed by the group)
     # and their IDs
     my_account = {
@@ -133,9 +137,14 @@ def main():
 def media_toot_again(orig_media_dict, mastodon_instance):
     """Re-upload media files to Mastodon for use in another toot.
     
-    Mastodon does not allow the re-use of already uploaded media files (images, videos) in a new toot. This
-    function downloads all media files from a toot and uploads them again. It returns a dict formatted in
-    a proper way to be used with the Mastodon.status_post() function."""
+    'orig_media_dict' - extracted media files from the original toot
+    'mastodon_instance' - needed to upload the media files again and create
+    a new media_dict.
+    
+    Mastodon does not allow the re-use of already uploaded media files (images,
+    videos) in a new toot. This function downloads all media files from a toot
+    and uploads them again. It returns a dict formatted in a proper way to be
+    used with the Mastodon.status_post() function."""
     new_media_dict = []
     for media in orig_media_dict:
         media_data = requests.get(media.url).content
