@@ -1,7 +1,7 @@
 #!/bin/python3
 
 ## tootgroup.py
-## Version 0.3
+## Version 0.4
 ##
 ##
 ## Andreas Schreiner
@@ -12,9 +12,11 @@
 ## See attached LICENSE file.
 ##
 
+import configparser
 import os
 import re
 import requests
+
 from mastodon import Mastodon
 
 
@@ -56,15 +58,24 @@ def main():
     # Configuration - to be read from config files while also
     # considering commandline flags
     # TODO: configparser and agparse!
-    my_mastodon_instance='https://chaos.social'
-    accept_DMs = True
-    accept_retoots = True
+    # TODO: standard storage place for config (and tmp files?)
+    my_config_file = 'tootgroup.conf'
     
+    #instantiate the ConfigParser class
+    my_config = configparser.ConfigParser()
+    my_config.read(my_config_file)
     
+    my_mastodon_instance = my_config['default']['mastodon_instance']
+    my_client_id = my_config['default']['client_id']
+    my_access_token = my_config['default']['access_token']
+    accept_DMs = my_config['default'].getboolean('accept_DMs')
+    accept_retoots = my_config['default'].getboolean('accept_retoots')
+
+
     # Create Mastodon API instance
     mastodon = Mastodon(
-        client_id = 'tootgroup_clientcred.secret',
-        access_token = 'tootgroup_usercred.secret',
+        client_id = my_client_id,
+        access_token = my_access_token,
         api_base_url = my_mastodon_instance
     )
     
