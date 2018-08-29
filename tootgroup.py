@@ -16,6 +16,7 @@ import configparser
 import os
 import re
 import requests
+import sys
 
 from mastodon import Mastodon
 
@@ -24,47 +25,58 @@ from mastodon import Mastodon
 # Execution starts here.
 def main():
     
-    # Configuration - to be read from config files while also
-    # considering commandline flags
-    # TODO: agparse!
+    # TODO: agparse! - commandline flags
     # TODO: standard storage place for config (and tmp files?)
+    # TODO: remove ramaining temp files from last run if the script did not close cleanly
     my_config_file = 'tootgroup.conf'
     my_group_name = 'default'
-    
-    
+        
     # Get and validate configuration from the config file.
     my_config = parse_configuration(my_config_file, my_group_name)  
     
-
     # Create Mastodon API instance
     mastodon = Mastodon(
         client_id = my_config[my_group_name]['client_id'],
         access_token = my_config[my_group_name]['access_token'],
         api_base_url = my_config[my_group_name]['mastodon_instance']
     )
-    
-    
-    # Get the group account and all corresponding information
-    # name, id, group members (== accounts followed by the group)
-    # their IDs and the time of the group's last toot.
-    my_account = {
-        "username" : mastodon.account_verify_credentials().username, 
-        "id" : mastodon.account_verify_credentials().id, 
-        "group_members" : "", 
-        "group_member_ids" : [], 
-        "last_toot_time" :  ""
-    }
+       
+    try:
+        # Get the group account and all corresponding information
+        # name, id, group members (== accounts followed by the group)
+        # their IDs and the time of the group's last toot.
+        #
+        # This connects to the Mastodon server for the first time - catch any
+        # excpetions that may occur from that here.
+        my_account = {
+            "username" : mastodon.account_verify_credentials().username, 
+            "id" : mastodon.account_verify_credentials().id, 
+            "group_members" : "", 
+            "group_member_ids" : [], 
+            "last_toot_time" :  ""
+        }
+    except Exception as e:
+        print("")
+        print(e)
+        print("\n########################################################")
+        print("tootgroup.py could not connect to the Mastodon server.")
+        print("If you know that it is running, there might be a")
+        print("problem with our local configuration.")
+        print("\nDelete tootgroup.py's config file and re-run the script")
+        print("for a new setup.")
+        print("########################################################\n")
+        sys.exit(0)
+    # Extract account information that could not be fetched directly    
     my_account["group_members"] = mastodon.account_following(my_account["id"])
     for member in my_account["group_members"]:
         my_account["group_member_ids"].append(member.id)
     my_account["last_toot_time"]  = mastodon.account_statuses(my_account["id"])[0].created_at
     
-    
     # Do we accept direct messages, public retoots, both or none? This
     # can be set in the configuration.
     accept_DMs = my_config[my_group_name].getboolean('accept_DMs')
     accept_retoots = my_config[my_group_name].getboolean('accept_retoots')
-    
+        
     # Get all notifications
     # TODO: check for pagination should the list become too long
     my_notifications = mastodon.notifications()
@@ -108,6 +120,9 @@ def main():
                             visibility = "public",
                             spoiler_text = notification.status.spoiler_text
                         )
+                        
+    print("Successful tootgroup.py run for " + "@" + my_account["username"] +
+        " at " + my_config[my_group_name]['mastodon_instance'])
 
 
 
@@ -150,22 +165,46 @@ def new_credentials_from_mastodon(group_name, config):
     TODO: catch login/register errors and retry
     """
     # Register tootgroup.py app at the Mastodon server
-    Mastodon.create_app(
-        'tootgroup.py',
-        api_base_url = config[group_name]['mastodon_instance'],
-        to_file = config[group_name]['client_id']
-    )
-    # Log in once with username and password and get an access
-    # token for future logins.
-    mastodon = Mastodon(
-        client_id = config[group_name]['client_id'],
-        api_base_url = config[group_name]['mastodon_instance']
-    )
-    mastodon.log_in(
-        input("Username (e-Mail): "),
-        input("Password: "),
-        to_file = config[group_name]['access_token']
-    )
+    try:
+        Mastodon.create_app(
+            'tootgroup.py',
+            api_base_url = config[group_name]['mastodon_instance'],
+            to_file = config[group_name]['client_id']
+        )
+        # Create Mastodon API instance
+        mastodon = Mastodon(
+            client_id = config[group_name]['client_id'],
+            api_base_url = config[group_name]['mastodon_instance']
+        )
+    except Exception as e:
+        print("")
+        print(e)
+        print("\n###################################################################")
+        print("The Mastodon instance URL is wrong or the server does not respond.")
+        print("tootgroup.py will exit now. Run it again to try once more!")
+        print("###################################################################\n")
+        sys.exit(0)
+ 
+    # Log in once with username and password to get an access token for future logins.
+    # Ask until login succeeds or at most 3 times before the skript gives up.
+    i = 0
+    while i < 3:
+        i+=1
+        try:
+            mastodon.log_in(
+                input("Username (e-Mail): "),
+                input("Password: "),
+                to_file = config[group_name]['access_token']
+            )
+            break
+        except Exception as e:
+            print("\nUsername and/or Password did not match!")
+            if i <3:
+                print("Please enter them again.\n")
+            else:
+                print("tootgroup.py will exit now. Run it again to try once more!\n")
+                sys.exit(0)
+
 
 
 
@@ -181,7 +220,7 @@ def parse_configuration(config_file,  group_name):
     does also take care of a first run situation where nothing is set up yet and
     in that way act as an installer!
     
-    parse_configuration returns a complete and usable configuration"""
+    parse_configuration should always return a complete and usable configuration"""
     config = configparser.ConfigParser()
     config.read(config_file)
     get_new_credentials = False
@@ -194,7 +233,7 @@ def parse_configuration(config_file,  group_name):
         write_new_config = True
     
     # Do we have a mastodon instance URL? If not, we have to
-    # ask for it and register at our group's server first.
+    # ask for it and register with our group's server first.
     if not config.has_option(group_name,  'mastodon_instance'):
         config[group_name]['mastodon_instance'] = ""
     if config[group_name]['mastodon_instance'] == "":
@@ -204,8 +243,8 @@ def parse_configuration(config_file,  group_name):
         get_new_credentials = True
         write_new_config = True
     
-    # Where can our client ID be found and does the file exist?
-    # If not, re-register our client.
+    # Where can the client ID be found and does the file exist?
+    # If not, re-register the client.
     if not config.has_option(group_name,  'client_id'):
         config[group_name]['client_id'] = ""
     if config[group_name]['client_id'] == "":
@@ -215,8 +254,8 @@ def parse_configuration(config_file,  group_name):
     if not os.path.isfile(config[group_name]['client_id']):
         get_new_credentials = True
     
-    # Where can our user access token be found and does the file exist?
-    # If not, re-register our client.
+    # Where can the user access token be found and does the file exist?
+    # If not, re-register the client to get new user credentials
     if not config.has_option(group_name,  'access_token'):
         config[group_name]['access_token'] = ""
     if config[group_name]['access_token'] == "":
@@ -257,7 +296,7 @@ def parse_configuration(config_file,  group_name):
         write_new_config = True
     
     # Some registration info or credentials were missing - we have to register
-    # tootgroup.py at our Mastodon server instance (again?)
+    # tootgroup.py with our Mastodon server instance. (again?)
     if get_new_credentials:
         new_credentials_from_mastodon(group_name, config)
     
