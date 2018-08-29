@@ -15,9 +15,9 @@ How does it work?
 -----------------
 
 tootgroup.py has to be set up on a computer and run periodically. It reads the
-notifications of the Mastodon account it is connected to and filters them for
+notifications from the Mastodon account it is connected to and filters them for
 messages to repost. There are two methods of creating a group post. One or both
-of them can be enabled or disabled during configuration.
+of them can be enabled or disabled during the setup procedure.
 
 1. Public mentions of group members are retooted if they preceed the group's
 name with an Exclamation Mark like "!@mastodon"
@@ -25,7 +25,7 @@ name with an Exclamation Mark like "!@mastodon"
 2. tootgroup.py can also look for direct messages from group members. It then
 extracts the status text as well as media files and creates a new public toot
 directly from the group account. The originating user will not be shown publicly
-but can still be seen by the group and instance administrators.
+but can still be seen by all group and instance administrators.
 
 If both repost methods are disabled, tootgroup.py will still run but not repost
 anything.
@@ -34,9 +34,10 @@ anything.
 How to set up?
 --------------
 
-tootgroup.py is still largely untested and in development. For the moment it has
-to be set up and configured manually by a person who understands the code and
-what it is doing. This will become MUCH MORE CONVINIENT in the future. 
+tootgroup.py is still largely untested and in development. I will help you with
+setup by asking all information it needs when you run it from the commandline
+for the first time. Still it might help if your're somewhat comfortable with Python
+scripting and the commandline in general.
 
 1. You require https://github.com/halcy/Mastodon.py to run.
 Install it via your operating system's package manager, pip or even manually
@@ -44,25 +45,22 @@ Install it via your operating system's package manager, pip or even manually
 2. You need an account on any Mastodon instance/server that will act as your
 group account. Think about if you should mark it as a "Bot".
 
-3. At the beginning of the tootgroup.py script change:
-```my_mastodon_instance='TO_YOUR_MASTODON_INSTANCE'```
-
-4. At the beginning of the tootgroup.py script you will also find the
-registration/first run code block. It is marked thus. You have to have your login
-and password ready. With that the tootgroup.py script can register itself as an
-authorised app in the Mastodon account settings.
-
-5. Run tootgroup.py from the command line in a directory that it can write to.
+3. Run tootgroup.py from the command line in a directory that it can write to.
 Input all required information and register with your Mastodon instance.
 
-6. When setup is done you MUST comment-out the setup code block again or otherwise
-tootgroup.py will re-register every time it is run! If this happens, you can still
-clean out all your allowed apps from your Mastodon account setings but try to avoid
-that.
+4. tootgroup.py will ask you for all needed setup information and try to get
+it right by connecting with the Mastodon server. If it cannot do so, it will tell
+you and you can try again. When successful, tootgroup.py will write the
+configuration to its .conf file and read it from there next time you run the script.
+Every successful run will print an according message to the command line.
 
-7. Test the funcionality by sending direct messages and "!@mentions" to your
+5. Test the funcionality by sending direct messages and "!@mentions" to your
 group while manually running tootgroup.py. See if everything works as expected.
 If it does, you can run the script periodically via cron and enjoy groop-tooting!
+
+    Here an example for a crontab entry that runs tootgroup.py every two minutes:
+    
+    `*/2 * * * * cd /home/username/bin/ && python3 tootgroup.py`
 
 
 
@@ -70,15 +68,8 @@ If it does, you can run the script periodically via cron and enjoy groop-tooting
 Planned Features and Whishlist items
 ------------------------------------
 
-##### TODO: autoinstall/autoconfigure
-      Check which configuration details are missing on startup and
-      query the user. That way tootgroup.py can be started from the
-      command line and will ask for all missing configuration details.
-      If nothing is missing, the script will simply do its task and
-      can then be automated with cron.
-
 ##### TODO: Error handling
-      Currently there is none... wich is bad
+      Currently there is not much... wich is still bad
 
 ##### TODO: file management
       Currently tootgroup.py simply runs from a directory where it will also

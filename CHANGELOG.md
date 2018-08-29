@@ -1,7 +1,14 @@
 # Change Log
 
-## [0.4] 2018-0?-??
-- Read and persist configuration
+## [0.5] 2018-??-??
+- Read commandline flags with agparser
+- Multigroup configuration from one skript
+
+## [0.4] 2018-08-29
+- Read and persist configuration with configparser
+- Detect problems with configuration and get user input for corrections
+- First-run/Install feature. Detect missing configuration and ask user for all
+necessary setup details.
 
 ## [0.3] 2018-08-28
 - Retoot mode is no longer triggered by using a specific hastag, but by preceding
