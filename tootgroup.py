@@ -107,8 +107,10 @@ def main():
                 if accept_DMs:
                     if notification.type == "mention" and notification.status.visibility == "direct":
                         
-                        # Remove html tags from the status content
-                        new_status = re.sub("<.*?>", "", notification.status.content)
+                        # Remove html tags from the status content but keep linebreaks
+                        print(notification.status.content)
+                        new_status = re.sub("</p><p>", "\n", notification.status.content)
+                        new_status = re.sub("<.*?>", "", new_status)
                         # Remove @metafunk from the text
                         new_status = re.sub("@metafunk", "", new_status)
                         
