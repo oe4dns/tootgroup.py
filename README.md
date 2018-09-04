@@ -69,7 +69,7 @@ Planned Features and Whishlist items
 ------------------------------------
 
 ##### TODO: Error handling
-      Currently there is not much... wich is still bad
+      Currently there is not much... which is still bad
 
 ##### TODO: file management
       Currently tootgroup.py simply runs from a directory where it will also
