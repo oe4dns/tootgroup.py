@@ -3,14 +3,20 @@
 ## [0.5] 2018-??-??
 - Read commandline flags with agparser
 - Multigroup configuration from one skript
+### FIXED
+- Retoots of direct messages do now keep linebreaks
+
+
 
 ## [0.4] 2018-08-29
+###ADDED
 - Read and persist configuration with configparser
 - Detect problems with configuration and get user input for corrections
 - First-run/Install feature. Detect missing configuration and ask user for all
 necessary setup details.
 
 ## [0.3] 2018-08-28
+### CHANGED
 - Retoot mode is no longer triggered by using a specific hastag, but by preceding
 the mention with an Exclamation Mark like "!@mastodon"
 - Code refactoring and cleanup. tootgroup.py behaves now more like a real
