@@ -3,10 +3,13 @@
 ## [0.5] 2018-??-??
 - Read commandline flags with agparser
 - Multigroup configuration from one skript
+
+
+
+## [0.4.1] 2018-10-02
 ### FIXED
-- Retoots of direct messages do now keep linebreaks
-
-
+- Retoots of direct messages do now keep their linebreaks
+- Removed hardcoded @groupname
 
 ## [0.4] 2018-08-29
 ###ADDED
