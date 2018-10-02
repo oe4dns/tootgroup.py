@@ -70,6 +70,8 @@ def main():
     my_account["group_members"] = mastodon.account_following(my_account["id"])
     for member in my_account["group_members"]:
         my_account["group_member_ids"].append(member.id)
+    # FIXME: This throws an Index Error if the account has never tooted anything!
+    # Only a problem with a totally new account but should be fixed before final relase.
     my_account["last_toot_time"]  = mastodon.account_statuses(my_account["id"])[0].created_at
     
     # Do we accept direct messages, public retoots, both or none? This
@@ -111,8 +113,9 @@ def main():
                         new_status = re.sub("<br />", "\n", notification.status.content)
                         new_status = re.sub("</p><p>", "\n\n", new_status)
                         new_status = re.sub("<.*?>", "", new_status)
-                        # Remove @metafunk from the text
-                        new_status = re.sub("@metafunk", "", new_status)
+                        # Remove the @username from the text
+                        rm_username = "@" + my_account["username"]
+                        new_status = re.sub(rm_username, "", new_status)
                         
                         # Repost as a new status
                         mastodon.status_post(
