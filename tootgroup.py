@@ -12,6 +12,7 @@
 ## See attached LICENSE file.
 ##
 
+import argparse
 import configparser
 import os
 import re
@@ -24,12 +25,13 @@ from mastodon import Mastodon
 
 # Execution starts here.
 def main():
+
+    my_commandline_arguments = parse_arguments()
     
-    # TODO: agparse! - commandline flags
     # TODO: standard storage place for config (and tmp files?)
     # TODO: remove ramaining temp files from last run if the script did not close cleanly
     my_config_file = 'tootgroup.conf'
-    my_group_name = 'default'
+    my_group_name = my_commandline_arguments['group_name']
         
     # Get and validate configuration from the config file.
     my_config = parse_configuration(my_config_file, my_group_name)  
@@ -212,15 +214,34 @@ def new_credentials_from_mastodon(group_name, config):
 
 
 
+def parse_arguments():
+    """Read arguments from the command line.
+    
+    parse_arguents() uses Python's agparser to read arguments from the command
+    line and to provide help and hints abouth which are available"""
+    # TODO: elaborate description
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-u', '--user',  default="default", 
+        help="Input username for the Mastodon group. tootgroup.py stores all "
+        "information connected to a specific group account under this name. "
+        "Choosing different names makes it then possible to manage multiple "
+        "Mastodon groups at the same time. If no username is given, user "
+        "\"%(default)s\" is always used instead.")
+    args = parser.parse_args()    
+    arguments = {'group_name': args.user}
+    return arguments
+
+
 
 def parse_configuration(config_file,  group_name):
-    """Read configuration from file, handle first-run situations and errors
+    """Read configuration from file, handle first-run situations and errors.
     
     'config_file' the path to the configuration file
     'group_name' determines the section to be read by configparser
     
     parse_configuration() uses Pyhon's configparser to read and interpret the
-    config file. It will detect a missing config file or missing elements a and
+    config file. It will detect a missing config file or missing elements and
     then try to solve problems by asking the user for more information. This
     does also take care of a first run situation where nothing is set up yet and
     in that way act as an installer!
