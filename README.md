@@ -77,11 +77,6 @@ Planned Features and Whishlist items
       will be moved to a user specific dot-directory and maybe the /tmp folder.
       for other platforms look at the "multi-platform" task.
 
-##### TODO: multi-user
-      create configuration files for separate users making it possible to
-      use tootgroup.py in parallel for multiple groups without hardcoding
-      anything in it.
-
 ##### TODO: multi-platform
       While Python is pretty platform independent, tootgroup.py has only been
       tested on Linux using Python 3. That concerns mostly the user configuration

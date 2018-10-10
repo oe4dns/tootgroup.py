@@ -2,7 +2,8 @@
 
 ## [0.5] 2018-??-??
 - Read commandline flags with agparser
-- Multigroup configuration from one skript
+- Configure multiple accounts and utilise the --user flag to switch
+  between them.
 
 
 
