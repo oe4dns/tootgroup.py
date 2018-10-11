@@ -14,6 +14,7 @@
 
 import argparse
 import configparser
+import datetime
 import os
 import re
 import requests
@@ -73,9 +74,31 @@ def main():
     my_account["group_members"] = mastodon.account_following(my_account["id"])
     for member in my_account["group_members"]:
         my_account["group_member_ids"].append(member.id)
+    
     # FIXME: This throws an Index Error if the account has never tooted anything!
     # Only a problem with a totally new account but should be fixed before final relase.
-    my_account["last_toot_time"]  = mastodon.account_statuses(my_account["id"])[0].created_at
+    my_account["last_toot_time"] = mastodon.account_statuses(my_account["id"])[0].created_at
+    
+    # If there are others except tootgroup.py posting to the group account,
+    # using last_toot_time is not a good way to figure out what has happened
+    # since the last run. Group mentions or direct messages could be missed
+    # in that case. Persisting and checking a timestamp fixes this problem
+    # at the disatvantage of having to write to mass storage every time.
+    use_last_run_timestamp = my_config[my_group_name].getboolean("shared_access")
+    if use_last_run_timestamp:
+        # Replace last_toot_time with the timestamp from last_run
+        lrtime = my_config[my_group_name]["last_run"]
+        lrdatetime = datetime.datetime.strptime(lrtime, "%Y-%m-%d %X.%f%z")
+        my_account["last_toot_time"] = lrdatetime
+        
+        # Now get the current timestamp and save it for the next run this can
+        # never be exactly right but should be close enough at amlost every
+        # imaginable occasion. If it fails here, a message could be posted twice
+        # which is acceptable enough.
+        lrdatetime = datetime.datetime.now().astimezone()
+        lrtime = lrdatetime.strftime("%Y-%m-%d %X.%f%z")
+        my_config[my_group_name]["last_run"] = lrtime
+        write_configuration(my_config_file, my_config)
     
     # Do we accept direct messages, public retoots, both or none? This
     # can be set in the configuration.
@@ -302,7 +325,7 @@ def parse_configuration(config_file,  group_name):
     if (config[group_name]["accept_dms"] == "") or (config[group_name]["accept_dms"] not in ("yes",  "no")):
         str = ""
         while True:
-            str = input("Should tootgroup.py repost direct messages from group users? [yes/no]: ")
+            str = input("\nShould tootgroup.py repost direct messages from group users? [yes/no]: ")
             if str.lower() not in ("yes",  "no"):
                 print("Please enter 'yes' or 'no'!")
                 continue
@@ -317,7 +340,7 @@ def parse_configuration(config_file,  group_name):
     if (config[group_name]["accept_retoots"] == "") or (config[group_name]["accept_retoots"] not in ("yes",  "no")):
         str = ""
         while True:
-            str = input("Should tootgroup.py retoot public mentions from group users? [yes/no]: ")
+            str = input("\nShould tootgroup.py retoot public mentions from group users? [yes/no]: ")
             if str.lower() not in ("yes",  "no"):
                 print("Please enter 'yes' or 'no'!")
                 continue
@@ -325,6 +348,32 @@ def parse_configuration(config_file,  group_name):
                 break
         config[group_name]["accept_retoots"] = str.lower()
         write_new_config = True
+    
+    # Do other people or bots except tootgroup.py post to the group?
+    if not config.has_option(group_name,  "shared_access"):
+        config[group_name]["shared_access"] = ""
+    if (config[group_name]["shared_access"] == "") or (config[group_name]["shared_access"] not in ("yes",  "no")):
+        str = ""
+        while True:
+            str = input("\nDo other people or bots except tootgroup.py post to this group? [yes/no]: ")
+            if str.lower() not in ("yes",  "no"):
+                print("Please enter 'yes' or 'no'!")
+                continue
+            else:
+                break
+        config[group_name]["shared_access"] = str.lower()
+        write_new_config = True
+    
+    # In cases where others except tootgroup.py are posting to the group account,
+    # the timestamp of the current run has to be persisted here. It will be needed
+    # to check for newly arrived notifications. Initialized with the time of setup.
+    if (not config.has_option(group_name,  "last_run")) or (config[group_name]["last_run"] == ""):
+        # get current time as datetime object and convert it to
+        # a string that can be stored in the config file.
+        dt = datetime.datetime.now().astimezone()
+        tstring = dt.strftime("%Y-%m-%d %X.%f%z")
+        config[group_name]["last_run"] = tstring
+        write_new_config = True    
     
     # Some registration info or credentials were missing - we have to register
     # tootgroup.py with our Mastodon server instance. (again?)
@@ -334,12 +383,16 @@ def parse_configuration(config_file,  group_name):
     # Have there been any changes to the configuration?
     # If yes we have to write them to the config file
     if write_new_config:
-        with open(config_file, "w") as configfile:
-            config.write(configfile)
+        write_configuration(config_file, config)
     
     # Configuration should be complete and working now - return it.
     return(config)
 
+
+def write_configuration(config_file,  config):
+    """Write out the configuration into the config file."""
+    with open(config_file, "w") as configfile:
+            config.write(configfile)
 
 
 # Start executing main() function if the script is called from a command line
