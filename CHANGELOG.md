@@ -1,10 +1,20 @@
 # Change Log
 
-## [0.5] 2018-??-??
-- Read commandline flags with agparser
-- Configure multiple accounts and utilise the --user flag to switch
-  between them.
+## [0.6] 2018-??-??
+Temporary file storage and cross platform checks
 
+## [0.5] 2018-10-12
+###ADDED
+- Read commandline flags with agparser
+- Added --user flag to configure and use multiple accounts
+- When sharing access to a group, tootgroup.py does no longer look for the last
+time it wrote anything to the group to determine what has happened since. In
+that case its persists timestamps and checks when the last run has happened to
+search for any new toots or direct messages to process. This is needed because
+any toots from other sources would cause tootgroup.py to miss notifications that
+happened between it and tootgroup's last run. This feature writes the config
+file to the disk every thime tootgroup.py is run and for that reason it is only
+activated if a shared account requires it.
 
 
 ## [0.4.1] 2018-10-02
@@ -29,8 +39,8 @@ commandline application.
 ## [0.2] - 2018-08-24
 ### Added
 - Configurable retoot mode
-Public mentions from group members are now retooted if they include a trigger
-hashtag. That way thei will point to the originating user. Direct messages are
+Public mentions from group members are now boosted if they include a trigger
+hashtag. That way they will point to the originating user. Direct messages are
 sent as new toots just like before, but the originating user will not be shown
 in that case. This is NOT a privacy feature since the group admin will still see
 who created a specific message. However, it can be handy for some use cases.
