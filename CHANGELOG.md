@@ -3,6 +3,10 @@
 ## [0.6] 2018-??-??
 Temporary file storage and cross platform checks
 
+## [0.5.1] 2018-10-??
+### FIXED
+- Retoots of direct messages do no longer show HTML-escaped special characters
+
 ## [0.5] 2018-10-12
 ###ADDED
 - Read commandline flags with agparser
@@ -15,7 +19,6 @@ any toots from other sources would cause tootgroup.py to miss notifications that
 happened between it and tootgroup's last run. This feature writes the config
 file to the disk every thime tootgroup.py is run and for that reason it is only
 activated if a shared account requires it.
-
 
 ## [0.4.1] 2018-10-02
 ### FIXED
