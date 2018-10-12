@@ -1,7 +1,7 @@
 #!/bin/python3
 
 ## tootgroup.py
-## Version 0.5
+## Version 0.5.1
 ##
 ##
 ## Andreas Schreiner
@@ -15,6 +15,7 @@
 import argparse
 import configparser
 import datetime
+import html
 import os
 import re
 import requests
@@ -135,14 +136,15 @@ def main():
                 if accept_DMs:
                     if notification.type == "mention" and notification.status.visibility == "direct":
                         
-                        # Remove html tags from the status content but keep linebreaks
+                        # Remove HTML tags from the status content but keep linebreaks
                         new_status = re.sub("<br />", "\n", notification.status.content)
                         new_status = re.sub("</p><p>", "\n\n", new_status)
                         new_status = re.sub("<.*?>", "", new_status)
                         # Remove the @username from the text
                         rm_username = "@" + my_account["username"]
                         new_status = re.sub(rm_username, "", new_status)
-                        
+                        # "un-escape" HTML special characters
+                        new_status = html.unescape(new_status)
                         # Repost as a new status
                         mastodon.status_post(
                             new_status,
@@ -390,7 +392,13 @@ def parse_configuration(config_file,  group_name):
 
 
 def write_configuration(config_file,  config):
-    """Write out the configuration into the config file."""
+    """Write out the configuration into the config file..
+    
+    "config_file" the path to the configuration file
+    "config" configparser object containing the current configuration.
+    
+    This can be called whenever the configuration has to be persisted by
+    writing it to the disk."""
     with open(config_file, "w") as configfile:
             config.write(configfile)
 
