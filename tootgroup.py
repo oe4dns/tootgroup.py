@@ -1,7 +1,7 @@
-#!/bin/python3
+#/bin/python3
 
 ## tootgroup.py
-## Version 0.5.1
+## Version 0.5.2
 ##
 ##
 ## Andreas Schreiner
@@ -177,6 +177,8 @@ def media_toot_again(orig_media_dict, mastodon_instance):
         media_data = requests.get(media.url).content
         # TODO: temporary file maganement needed here
         filename = os.path.basename(media.url)
+        # basename still includes a "?" followed by a number after the file's name. Remove them both.
+        filename = filename.split("?")[0]
         with open(filename, "wb") as handler: # use "wb" instead of "w" to enable binary mode (needed on Windows)
             handler.write(media_data)
         new_media_dict.append(mastodon_instance.media_post(filename, description=media.description))
