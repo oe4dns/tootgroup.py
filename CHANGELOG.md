@@ -8,6 +8,10 @@ Temporary file storage and cross platform checks
 - Shared mode improved TODO: explain
 - Pagination
 
+## [0.5.2] 2018-10-31
+### FIXED
+- Media upload was broken due to change in Mastodons media.url
+
 ## [0.5.1] 2018-10-12
 ### FIXED
 - Retoots of direct messages do no longer show HTML-escaped special characters
