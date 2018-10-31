@@ -1,9 +1,14 @@
 # Change Log
 
-## [0.6] 2018-??-??
+## [0.7] 20??-??-??
 Temporary file storage and cross platform checks
 
-## [0.5.1] 2018-10-??
+## [0.6] 2018-??-??
+### CHANGED
+- Shared mode improved TODO: explain
+- Pagination
+
+## [0.5.1] 2018-10-12
 ### FIXED
 - Retoots of direct messages do no longer show HTML-escaped special characters
 
