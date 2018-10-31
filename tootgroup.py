@@ -1,7 +1,7 @@
 #!/bin/python3
 
 ## tootgroup.py
-## Version 0.5.1
+## Version 0.6
 ##
 ##
 ## Andreas Schreiner
@@ -109,9 +109,13 @@ def main():
     # Get all notifications.
     # TODO: check for pagination should the list become too long
     my_notifications = mastodon.notifications()
-
+#    print(my_notifications)
+#    num_i = 0
     # run through the notifications and look for retoot candidates
     for notification in my_notifications:
+#        print(notification)
+#        print(num_i)
+#        num_i+=1
         
         # Only consider notifications that happened after the groups last toot
         # We have to use the time of notification and not the "status" directly since
@@ -145,6 +149,7 @@ def main():
                         new_status = re.sub(rm_username, "", new_status)
                         # "un-escape" HTML special characters
                         new_status = html.unescape(new_status)
+                        # TODO: test again - some "missing mime type" errors occured!
                         # Repost as a new status
                         mastodon.status_post(
                             new_status,
@@ -173,10 +178,13 @@ def media_toot_again(orig_media_dict, mastodon_instance):
     It returns a dict formatted in a proper way to be used by the 
     Mastodon.status_post() function."""
     new_media_dict = []
+    print(orig_media_dict)
     for media in orig_media_dict:
         media_data = requests.get(media.url).content
         # TODO: temporary file maganement needed here
         filename = os.path.basename(media.url)
+        # basename still includes a "?" followed by a number after the file's name. Remove them both.
+        filename = filename.split("?")[0]
         with open(filename, "wb") as handler: # use "wb" instead of "w" to enable binary mode (needed on Windows)
             handler.write(media_data)
         new_media_dict.append(mastodon_instance.media_post(filename, description=media.description))
