@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/python3
 
 ## tootgroup.py
 ## Version 0.6
@@ -14,7 +14,6 @@
 
 import argparse
 import configparser
-import datetime
 import html
 import os
 import re
@@ -34,6 +33,7 @@ def main():
     # TODO: standard storage place for config (and tmp files?)
     # TODO: remove ramaining temp files from last run if the script did not close cleanly
     my_config_file = "tootgroup.conf"
+    write_new_config = False
     my_group_name = my_commandline_arguments["group_name"]
     
     # Get and validate configuration from the config file.
@@ -76,89 +76,97 @@ def main():
     for member in my_account["group_members"]:
         my_account["group_member_ids"].append(member.id)
     
-    # FIXME: This throws an Index Error if the account has never tooted anything!
-    # Only a problem with a totally new account but should be fixed before final relase.
-    my_account["last_toot_time"] = mastodon.account_statuses(my_account["id"])[0].created_at
-    
-    # If there are others except tootgroup.py posting to the group account,
-    # using last_toot_time is not a good way to figure out what has happened
-    # since the last run. Group mentions or direct messages could be missed
-    # in that case. Persisting and checking a timestamp fixes this problem
-    # at the disatvantage of having to write to mass storage every time.
-    use_last_run_timestamp = my_config[my_group_name].getboolean("shared_access")
-    if use_last_run_timestamp:
-        # Replace last_toot_time with the timestamp from last_run
-        lrtime = my_config[my_group_name]["last_run"]
-        lrdatetime = datetime.datetime.strptime(lrtime, "%Y-%m-%d %X.%f%z")
-        my_account["last_toot_time"] = lrdatetime
-        
-        # Now get the current timestamp and save it for the next run this can
-        # never be exactly right but should be close enough at amlost every
-        # imaginable occasion. If it fails here, a message could be posted twice
-        # which is acceptable enough.
-        lrdatetime = datetime.datetime.now().astimezone()
-        lrtime = lrdatetime.strftime("%Y-%m-%d %X.%f%z")
-        my_config[my_group_name]["last_run"] = lrtime
-        write_configuration(my_config_file, my_config)
-    
     # Do we accept direct messages, public retoots, both or none? This
     # can be set in the configuration.
     accept_DMs = my_config[my_group_name].getboolean("accept_DMs")
     accept_retoots = my_config[my_group_name].getboolean("accept_retoots")
     
-    # Get all notifications.
-    # TODO: check for pagination should the list become too long
-    my_notifications = mastodon.notifications()
-#    print(my_notifications)
-#    num_i = 0
+    # Get all new notifications up to a maximum number set here.
+    # Defaults to 100 and has to be changed in the code if really desired.
+    # Use the ID of the last toot or retoot for deciding what is new.
+    notification_count = 0
+    max_notifications = 100
+    max_notification_id = None
+    latest_notification_id = 0
+    my_notifications = []
+    get_more_notifications = True
+    
+    # TODO: check what happens if there are no or too few notifications yet
+    #
+    # Get notifications, stop if either the last known notification ID or
+    # the maximum number is reached.
+    while get_more_notifications:
+        get_notifications = mastodon.notifications(max_id = max_notification_id)
+        
+        # remember the ID of the latest notification
+        if notification_count == 0:
+            latest_notification_id = get_notifications[0].id
+        
+        for notification in get_notifications:
+            max_notification_id = notification.id
+            
+            if notification.id > int(my_config[my_group_name]["last_seen_id"]) and notification_count < max_notifications:
+                my_notifications.append(notification)
+            else:
+                get_more_notifications = False
+            
+            notification_count += 1
+    
+    # If there have been new notifications since the last run, update "last_seen_id"
+    # and update config file to persist the new value.
+    if latest_notification_id > int(my_config[my_group_name]["last_seen_id"]):
+        my_config[my_group_name]["last_seen_id"] = str(latest_notification_id)
+        write_new_config = True
+    
+    
+    # Reverse notification list so that the oldest notifications are processed first
+    my_notifications = my_notifications[::-1]
+
     # run through the notifications and look for retoot candidates
     for notification in my_notifications:
-#        print(notification)
-#        print(num_i)
-#        num_i+=1
         
-        # Only consider notifications that happened after the groups last toot
-        # We have to use the time of notification and not the "status" directly since
-        # not all notification types do have a status.
-        if notification.created_at > my_account["last_toot_time"]:
-            
-            # Only from group members
-            if notification.account.id in my_account["group_member_ids"]:
-            
-                # Is retooting of public mentions configured?
-                if accept_retoots:
-                    if notification.type == "mention" and notification.status.visibility == "public":
-                        # Only if the mention was preceeded by an "!". 
-                        # To check this, html tags have to be removed first.
-                        repost_trigger = "!@" + my_account["username"]
-                        status = re.sub("<.*?>", "", notification.status.content)
-                        if repost_trigger in status:
-                            mastodon.status_reblog(notification.status.id)
+        # Only from group members
+        if notification.account.id in my_account["group_member_ids"]:
         
-                # Is reposting of direct messages configured? - if yes then:
-                # Look for direct messages
-                if accept_DMs:
-                    if notification.type == "mention" and notification.status.visibility == "direct":
-                        
-                        # Remove HTML tags from the status content but keep linebreaks
-                        new_status = re.sub("<br />", "\n", notification.status.content)
-                        new_status = re.sub("</p><p>", "\n\n", new_status)
-                        new_status = re.sub("<.*?>", "", new_status)
-                        # Remove the @username from the text
-                        rm_username = "@" + my_account["username"]
-                        new_status = re.sub(rm_username, "", new_status)
-                        # "un-escape" HTML special characters
-                        new_status = html.unescape(new_status)
-                        # TODO: test again - some "missing mime type" errors occured!
-                        # Repost as a new status
-                        mastodon.status_post(
-                            new_status,
-                            media_ids = media_toot_again(notification.status.media_attachments, mastodon),
-                            sensitive = notification.status.sensitive,
-                            visibility = "public",
-                            spoiler_text = notification.status.spoiler_text
-                        )
-                        
+            # Is retooting of public mentions configured?
+            if accept_retoots:
+                if notification.type == "mention" and notification.status.visibility == "public":
+                    # Only if the mention was preceeded by an "!". 
+                    # To check this, html tags have to be removed first.
+                    repost_trigger = "!@" + my_account["username"]
+                    status = re.sub("<.*?>", "", notification.status.content)
+                    if repost_trigger in status:
+                        print("would now retoot ID: " + str(notification.status.id))
+#                        mastodon.status_reblog(notification.status.id)
+    
+            # Is reposting of direct messages configured? - if yes then:
+            # Look for direct messages
+            if accept_DMs:
+                if notification.type == "mention" and notification.status.visibility == "direct":
+                    
+                    # Remove HTML tags from the status content but keep linebreaks
+                    new_status = re.sub("<br />", "\n", notification.status.content)
+                    new_status = re.sub("</p><p>", "\n\n", new_status)
+                    new_status = re.sub("<.*?>", "", new_status)
+                    # Remove the @username from the text
+                    rm_username = "@" + my_account["username"]
+                    new_status = re.sub(rm_username, "", new_status)
+                    # "un-escape" HTML special characters
+                    new_status = html.unescape(new_status)
+                    # Repost as a new status
+                    print("would now repost new status: " + new_status)
+#                    mastodon.status_post(
+#                        new_status,
+#                        media_ids = media_toot_again(notification.status.media_attachments, mastodon),
+#                        sensitive = notification.status.sensitive,
+#                        visibility = "public",
+#                        spoiler_text = notification.status.spoiler_text
+#                    )
+    
+    # There have been changes requiring to persist the new configuration
+    if write_new_config:
+        write_configuration(my_config_file, my_config)
+    
     print("Successful tootgroup.py run for " + "@" + my_account["username"] +
         " at " + my_config[my_group_name]["mastodon_instance"])
 
@@ -178,7 +186,6 @@ def media_toot_again(orig_media_dict, mastodon_instance):
     It returns a dict formatted in a proper way to be used by the 
     Mastodon.status_post() function."""
     new_media_dict = []
-    print(orig_media_dict)
     for media in orig_media_dict:
         media_data = requests.get(media.url).content
         # TODO: temporary file maganement needed here
@@ -359,30 +366,11 @@ def parse_configuration(config_file,  group_name):
         config[group_name]["accept_retoots"] = str.lower()
         write_new_config = True
     
-    # Do other people or bots except tootgroup.py post to the group?
-    if not config.has_option(group_name,  "shared_access"):
-        config[group_name]["shared_access"] = ""
-    if (config[group_name]["shared_access"] == "") or (config[group_name]["shared_access"] not in ("yes",  "no")):
-        str = ""
-        while True:
-            str = input("\nDo other people or bots except tootgroup.py post to this group? [yes/no]: ")
-            if str.lower() not in ("yes",  "no"):
-                print("Please enter 'yes' or 'no'!")
-                continue
-            else:
-                break
-        config[group_name]["shared_access"] = str.lower()
-        write_new_config = True
-    
-    # In cases where others except tootgroup.py are posting to the group account,
-    # the timestamp of the current run has to be persisted here. It will be needed
-    # to check for newly arrived notifications. Initialized with the time of setup.
-    if (not config.has_option(group_name,  "last_run")) or (config[group_name]["last_run"] == ""):
-        # get current time as datetime object and convert it to
-        # a string that can be stored in the config file.
-        dt = datetime.datetime.now().astimezone()
-        tstring = dt.strftime("%Y-%m-%d %X.%f%z")
-        config[group_name]["last_run"] = tstring
+    # The id of the last group-toot has to be persisted here. It is needed
+    # to check for newly arrived notifications. Initialized with a sane value at setup.
+    if (not config.has_option(group_name,  "last_seen_id")) or (config[group_name]["last_seen_id"] == ""):
+        # TODO: v0.6 !! initialize last_seen_id with sane value
+        config[group_name]["last_seen_id"] = "1"
         write_new_config = True    
     
     # Some registration info or credentials were missing - we have to register
@@ -405,7 +393,7 @@ def write_configuration(config_file,  config):
     "config_file" the path to the configuration file
     "config" configparser object containing the current configuration.
     
-    This can be called whenever the configuration has to be persisted by
+    This can be called whenever the configuration needs to be persisted by
     writing it to the disk."""
     with open(config_file, "w") as configfile:
             config.write(configfile)
