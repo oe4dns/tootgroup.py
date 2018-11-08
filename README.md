@@ -58,7 +58,7 @@ script. Every successful run will print an according message to the command line
 5. If you want to set up tootgroup.py for more than one group, you can run it
 again while specifying the "--user username" flag. It will then generate an
 independent configuration that will be read every thime you call
-tootgroup.py with this user. If you don't specify any user, the user "default"
+tootgroup.py with this user. If you don't specify any, the user "default"
 will be created and used.
 
 6. Test the funcionality by sending direct messages and "!@mentions" to your
@@ -88,12 +88,6 @@ Planned Features and Whishlist items
       While Python is pretty platform independent, tootgroup.py has only been
       tested on Linux using Python 3. That concerns mostly the user configuration
       as well as (temporary) file management.
-
-##### TODO: pagination
-      If there are too many notifications returned from Mastodon, they will be
-      paginated. This could lead to direct messages being missed by tootgroup.py
-      in a heavy use scenario (unlikely) or if it is being spammed acively (denial
-      of service attack). Iterating over paginated returns is needed.
 
 ##### TODO: push-notifications feasible?
       Look into push notifications so that tootgroup.py would not have to be
