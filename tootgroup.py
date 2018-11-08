@@ -83,7 +83,7 @@ def main():
     
     # Get all new notifications up to a maximum number set here.
     # Defaults to 100 and has to be changed in the code if really desired.
-    # Use the ID of the last toot or retoot for deciding what is new.
+    # Use the ID of the last seen notification for deciding what is new.
     notification_count = 0
     max_notifications = 100
     max_notification_id = None
@@ -94,13 +94,21 @@ def main():
     # TODO: check what happens if there are no or too few notifications yet
     #
     # Get notifications, stop if either the last known notification ID or
-    # the maximum number is reached.
+    # the maximum number is reached. Chunk size is limited to 40 by Mastodon
+    # but can be reduced further by the server setup. 
     while get_more_notifications:
         get_notifications = mastodon.notifications(max_id = max_notification_id)
         
-        # remember the ID of the latest notification
+        # remember the ID of the latest notification during the first iteration
         if notification_count == 0:
             latest_notification_id = get_notifications[0].id
+        
+        # Initialize "last_seen_id" on first run. Notifications are ignored up
+        # to this point, but newer ones will be considered subsequently.
+        if my_config[my_group_name]["last_seen_id"] == "firstrun":
+            my_config[my_group_name]["last_seen_id"] = str(latest_notification_id)
+            write_new_config = True
+            print("First run complete. Run again to start group-tooting.")
         
         for notification in get_notifications:
             max_notification_id = notification.id
@@ -118,8 +126,7 @@ def main():
         my_config[my_group_name]["last_seen_id"] = str(latest_notification_id)
         write_new_config = True
     
-    
-    # Reverse notification list so that the oldest notifications are processed first
+    # Reverse list of notifications so that the oldest are processed first
     my_notifications = my_notifications[::-1]
 
     # run through the notifications and look for retoot candidates
@@ -136,8 +143,7 @@ def main():
                     repost_trigger = "!@" + my_account["username"]
                     status = re.sub("<.*?>", "", notification.status.content)
                     if repost_trigger in status:
-                        print("would now retoot ID: " + str(notification.status.id))
-#                        mastodon.status_reblog(notification.status.id)
+                        mastodon.status_reblog(notification.status.id)
     
             # Is reposting of direct messages configured? - if yes then:
             # Look for direct messages
@@ -154,14 +160,13 @@ def main():
                     # "un-escape" HTML special characters
                     new_status = html.unescape(new_status)
                     # Repost as a new status
-                    print("would now repost new status: " + new_status)
-#                    mastodon.status_post(
-#                        new_status,
-#                        media_ids = media_toot_again(notification.status.media_attachments, mastodon),
-#                        sensitive = notification.status.sensitive,
-#                        visibility = "public",
-#                        spoiler_text = notification.status.spoiler_text
-#                    )
+                    mastodon.status_post(
+                        new_status,
+                        media_ids = media_toot_again(notification.status.media_attachments, mastodon),
+                        sensitive = notification.status.sensitive,
+                        visibility = "public",
+                        spoiler_text = notification.status.spoiler_text
+                    )
     
     # There have been changes requiring to persist the new configuration
     if write_new_config:
@@ -269,8 +274,8 @@ def parse_arguments():
     parser.add_argument("-u", "--user",  default="default", 
         help="Input username for the Mastodon group. tootgroup.py stores all "
         "information connected to a specific group account under this name. "
-        "Choosing different names makes it then possible to manage multiple "
-        "Mastodon groups at the same time. If no username is given, user "
+        "By choosing different names it is possible to manage multiple "
+        "Mastodon groups from the same skript. If no username is given, user "
         "\"%(default)s\" is always used instead.")
     args = parser.parse_args()    
     arguments = {}
@@ -366,11 +371,12 @@ def parse_configuration(config_file,  group_name):
         config[group_name]["accept_retoots"] = str.lower()
         write_new_config = True
     
-    # The id of the last group-toot has to be persisted here. It is needed
-    # to check for newly arrived notifications. Initialized with a sane value at setup.
+    # The ID of the last group-toot is needed to check for newly arrived
+    # notifications and will be persisted here. It is initially set up with
+    # "firstrun" to indicate this situation.
+    # Tootgroup.py will then get sane values and continue.
     if (not config.has_option(group_name,  "last_seen_id")) or (config[group_name]["last_seen_id"] == ""):
-        # TODO: v0.6 !! initialize last_seen_id with sane value
-        config[group_name]["last_seen_id"] = "1"
+        config[group_name]["last_seen_id"] = "firstrun"
         write_new_config = True    
     
     # Some registration info or credentials were missing - we have to register

@@ -3,14 +3,20 @@
 ## [0.7] 20??-??-??
 Temporary file storage and cross platform checks
 
-## [0.6] 2018-??-??
+## [0.6] 2018-11-08
+### ADDED
+- Pagination. Fetching notifications can give paged results if there are too
+many to return at once. tootgroup.py can now take care of that and also limit
+the maximum fetched notifications count.
+
 ### CHANGED
-- Shared mode improved TODO: explain
-- Pagination
+- Further improved shared mode. No more difference necessary between it and
+exclusive account access by tootgroup.py
+Notification IDs are now used to determine which ones are new and have to be considered for posting.
 
 ## [0.5.2] 2018-10-31
 ### FIXED
-- Media upload was broken due to change in Mastodons media.url
+- Media upload was broken due to change in Mastodon's media.url
 
 ## [0.5.1] 2018-10-12
 ### FIXED
