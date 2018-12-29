@@ -149,7 +149,11 @@ def main():
                     repost_trigger = "!@" + my_account["username"]
                     status = re.sub("<.*?>", "", notification.status.content)
                     if repost_trigger in status:
-                        mastodon.status_reblog(notification.status.id)
+                        if not my_commandline_arguments["dry_run"]:
+                            mastodon.status_reblog(notification.status.id)
+                            print("Retooted from notification ID: " + str(notification.id))
+                        else:
+                            print("DRY RUN - would have retooted from notification ID: " + str(notification.id))
     
             # Is reposting of direct messages configured? - if yes then:
             # Look for direct messages
@@ -165,17 +169,22 @@ def main():
                     new_status = re.sub(rm_username, "", new_status)
                     # "un-escape" HTML special characters
                     new_status = html.unescape(new_status)
-                    # Repost as a new status
-                    mastodon.status_post(
-                        new_status,
-                        media_ids = media_toot_again(notification.status.media_attachments, mastodon),
-                        sensitive = notification.status.sensitive,
-                        visibility = "public",
-                        spoiler_text = notification.status.spoiler_text
-                    )
+                    if not my_commandline_arguments["dry_run"]:
+                        # Repost as a new status
+                        mastodon.status_post(
+                            new_status,
+                            media_ids = media_toot_again(notification.status.media_attachments, mastodon),
+                            sensitive = notification.status.sensitive,
+                            visibility = "public",
+                            spoiler_text = notification.status.spoiler_text
+                        )
+                        print("Newly posted from notification ID: " + str(notification.id))
+                    else:
+                        print("DRY RUN - would have newly posted from notification ID: " + str(notification.id))
     
     # There have been changes requiring to persist the new configuration
-    if write_new_config:
+    # but not in a dry-run condition
+    if write_new_config and not my_commandline_arguments["dry_run"]:
         write_configuration(my_config_file, my_config)
     
     print("Successful tootgroup.py run for " + "@" + my_account["username"] +
@@ -279,6 +288,9 @@ def parse_arguments():
     tooting anything. This is useful if the script has not been running for
     a while and would otherwise (re)post lots of old group-toots.
 
+    -d, --dry-run: Parse new messages but do not upload or toot anything.
+    Shows the ID of messages it would have processed instead
+
     -k, --ketchup: Same as above, for the sake of lol.
 
     -u, --user: user the script is currently running for. Needed by configparser
@@ -289,6 +301,9 @@ def parse_arguments():
         help="Catch up to the current state of the timeline without tooting "
         "anything. This is useful if the script has not been running for a "
         "while and would otherwise (re)post lots of old group-toots.")
+    parser.add_argument("-d", "--dry-run", action="store_true",
+        help="Parse new messages but do not upload or toot anything. "
+        "Shows the ID of messages it would have processed instead.")
     parser.add_argument("-k", "--ketchup", action="store_true",
         help="Same as -c or --catch-up for the sake of lol!")
     parser.add_argument("-u", "--user",  default="default", 
@@ -301,8 +316,11 @@ def parse_arguments():
     arguments = {}
     arguments["group_name"] = args.user
     arguments["catch_up"] = False
+    arguments["dry_run"] = False
     if args.catch_up or args.ketchup:
         arguments["catch_up"] = True
+    if args.dry_run:
+        arguments["dry_run"] = True
 
     return arguments
 

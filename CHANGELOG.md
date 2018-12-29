@@ -7,6 +7,7 @@ Change Log
 ### ADDED
 
 - Commandline flag to catch up with the current timeline without posting anything
+- Commandline flag to dry-run without updating or posting anything - useful for testing
 
 [0.6] 2018-11-08
 ----------------
