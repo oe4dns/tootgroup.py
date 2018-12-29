@@ -64,30 +64,29 @@ difficulties should appear.
 
     Here is an example for a crontab entry that runs `tootgroup.py` every two minutes:
 
-    `*/2 * * * * cd /home/username/bin/ && python3 `tootgroup.py` --user default`
+    `*/2 * * * * cd /home/username/bin/ && python3 tootgroup.py --user default`
 
 Planned Features and Whishlist items
 ------------------------------------
 
-##### TODO: catch-up feature for toot IDs
-      Commandline flag tho just update the last-seen ID and not toot anything
-      Useful for catching up to current if the skript does not run for a while
-      for any reason.
+### TODO: Error handling
 
-##### TODO: Error handling
-      Currently there is not much... which is still bad
+    Currently there is not much... which is still bad
 
-##### TODO: file management
-      Currently tootgroup.py simply runs from a directory where it will also
-      keep all its configuration specific and temporary files. In Linux things
-      will be moved to a user specific dot-directory and maybe the /tmp folder.
-      for other platforms look at the "multi-platform" task.
+### TODO: file management
 
-##### TODO: multi-platform
-      While Python is pretty platform independent, tootgroup.py has only been
-      tested on Linux using Python 3. That concerns mostly the user configuration
-      as well as (temporary) file management.
+    Currently tootgroup.py simply runs from a directory where it will also
+    keep all its configuration specific and temporary files. In Linux things
+    will be moved to a user specific dot-directory and maybe the /tmp folder.
+    for other platforms look at the "multi-platform" task.
 
-##### TODO: push-notifications feasible?
-      Look into push notifications so that tootgroup.py would not have to be
-      run via cron periodically
+### TODO: multi-platform
+
+    While Python is pretty platform independent, tootgroup.py has only been
+    tested on Linux using Python 3. That concerns mostly the user configuration
+    as well as (temporary) file management.
+
+### TODO: push-notifications feasible?
+
+    Look into push notifications so that tootgroup.py would not have to be
+    run via cron periodically

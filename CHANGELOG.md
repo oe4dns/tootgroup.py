@@ -1,11 +1,15 @@
-# Change Log
+Change Log
+==========
 
-## [0.7] 20??-??-??
+[0.7] 20??-??-??
+----------------
 
-Temporary file storage and cross platform checks
-Ketchup
+### ADDED
 
-## [0.6] 2018-11-08
+- Commandline flag to catch up with the current timeline without posting anything
+
+[0.6] 2018-11-08
+----------------
 
 ### ADDED
 
@@ -19,19 +23,22 @@ Ketchup
   exclusive account access by `tootgroup.py`
   Notification IDs are now used to determine which ones are new and have to be considered for posting.
 
-## [0.5.2] 2018-10-31
+[0.5.2] 2018-10-31
+------------------
 
 ### FIXED
 
 - Media upload was broken due to change in Mastodon's media.url
 
-## [0.5.1] 2018-10-12
+[0.5.1] 2018-10-12
+------------------
 
 ### FIXED
 
 - Retoots of direct messages do no longer show HTML-escaped special characters
 
-## [0.5] 2018-10-12
+[0.5] 2018-10-12
+----------------
 
 ### ADDED
 
@@ -46,14 +53,16 @@ Ketchup
   file to the disk every thime `tootgroup.py` is run and for that reason it is only
   activated if a shared account requires it.
 
-## [0.4.1] 2018-10-02
+[0.4.1] 2018-10-02
+------------------
 
 ### FIXED
 
 - Retoots of direct messages do now keep their linebreaks
 - Removed hardcoded @groupname
 
-## [0.4] 2018-08-29
+[0.4] 2018-08-29
+----------------
 
 ### ADDED
 
@@ -62,7 +71,8 @@ Ketchup
 - First-run/Install feature. Detect missing configuration and ask user for all
   necessary setup details.
 
-## [0.3] 2018-08-28
+[0.3] 2018-08-28
+----------------
 
 ### CHANGED
 
@@ -71,7 +81,8 @@ Ketchup
 - Code refactoring and cleanup. `tootgroup.py` behaves now more like a real
   commandline application.
 
-## [0.2] - 2018-08-24
+[0.2] - 2018-08-24
+------------------
 
 ### Added
 
@@ -83,7 +94,8 @@ Ketchup
   who created a specific message. However, it can be handy for some use cases.
   Both options can be enabled or disabled during setup.
 
-## [0.1] - 2018-08-19
+[0.1] - 2018-08-19
+------------------
 
 ### Initial commit
 

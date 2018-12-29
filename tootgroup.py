@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ## tootgroup.py
-## Version 0.6
+## Version 0.7
 ##
 ##
 ## Andreas Schreiner
@@ -38,6 +38,12 @@ def main():
     
     # Get and validate configuration from the config file.
     my_config = parse_configuration(my_config_file, my_group_name)
+
+    # If the "catch-up" commandline argument has been given, reset the last seen
+    # ID so that tootgroup.py only updates its according config value without
+    # retooting anything.
+    if my_commandline_arguments["catch_up"]:
+        my_config[my_group_name]["last_seen_id"] = "catch-up" 
     
     # Create Mastodon API instance.
     mastodon = Mastodon(
@@ -105,10 +111,10 @@ def main():
         
         # Initialize "last_seen_id" on first run. Notifications are ignored up
         # to this point, but newer ones will be considered subsequently.
-        if my_config[my_group_name]["last_seen_id"] == "firstrun":
+        if my_config[my_group_name]["last_seen_id"] == "catch-up":
             my_config[my_group_name]["last_seen_id"] = str(latest_notification_id)
             write_new_config = True
-            print("First run complete. Run again to start group-tooting.")
+            print("Caught up to current timeline. Run again to start group-tooting.")
         
         for notification in get_notifications:
             max_notification_id = notification.id
@@ -267,10 +273,24 @@ def parse_arguments():
     arguments are available
     
     Availble arguments:
+    -h, --help: Automatically generated, prints options for help
+
+    -c, --catch-up: Catch up to the current state of the timeline without
+    tooting anything. This is useful if the script has not been running for
+    a while and would otherwise (re)post lots of old group-toots.
+
+    -k, --ketchup: Same as above, for the sake of lol.
+
     -u, --user: user the script is currently running for. Needed by configparser
     to find its configuration."""
     
     parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--catch-up", action="store_true",
+        help="Catch up to the current state of the timeline without tooting "
+        "anything. This is useful if the script has not been running for a "
+        "while and would otherwise (re)post lots of old group-toots.")
+    parser.add_argument("-k", "--ketchup", action="store_true",
+        help="Same as -c or --catch-up for the sake of lol!")
     parser.add_argument("-u", "--user",  default="default", 
         help="Input username for the Mastodon group. tootgroup.py stores all "
         "information connected to a specific group account under this name. "
@@ -280,6 +300,10 @@ def parse_arguments():
     args = parser.parse_args()    
     arguments = {}
     arguments["group_name"] = args.user
+    arguments["catch_up"] = False
+    if args.catch_up or args.ketchup:
+        arguments["catch_up"] = True
+
     return arguments
 
 
@@ -373,10 +397,10 @@ def parse_configuration(config_file,  group_name):
     
     # The ID of the last group-toot is needed to check for newly arrived
     # notifications and will be persisted here. It is initially set up with
-    # "firstrun" to indicate this situation.
+    # "catch-up" to indicate this situation.
     # Tootgroup.py will then get sane values and continue.
     if (not config.has_option(group_name,  "last_seen_id")) or (config[group_name]["last_seen_id"] == ""):
-        config[group_name]["last_seen_id"] = "firstrun"
+        config[group_name]["last_seen_id"] = "catch-up"
         write_new_config = True    
     
     # Some registration info or credentials were missing - we have to register
