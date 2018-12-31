@@ -85,8 +85,3 @@ Planned Features and Whishlist items
     While Python is pretty platform independent, tootgroup.py has only been
     tested on Linux using Python 3. That concerns mostly the user configuration
     as well as (temporary) file management.
-
-### TODO: push-notifications feasible?
-
-    Look into push notifications so that tootgroup.py would not have to be
-    run via cron periodically

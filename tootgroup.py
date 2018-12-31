@@ -19,6 +19,7 @@ import os
 import re
 import requests
 import sys
+import tempfile
 
 from mastodon import Mastodon
 
@@ -208,14 +209,21 @@ def media_toot_again(orig_media_dict, mastodon_instance):
     new_media_dict = []
     for media in orig_media_dict:
         media_data = requests.get(media.url).content
-        # TODO: temporary file maganement needed here
         filename = os.path.basename(media.url)
         # basename still includes a "?" followed by a number after the file's name. Remove them both.
         filename = filename.split("?")[0]
-        with open(filename, "wb") as handler: # use "wb" instead of "w" to enable binary mode (needed on Windows)
-            handler.write(media_data)
-        new_media_dict.append(mastodon_instance.media_post(filename, description=media.description))
-        os.remove(filename)
+        # separate filename and extension
+        filename, file_ext = os.path.splitext(filename)
+        f_temp = tempfile.NamedTemporaryFile(suffix=file_ext, delete=False, mode="w+b")
+        # TODO: catch and handle errors
+        try:  
+            f_temp.write(media_data)
+            f_temp.close() # close to flush data
+            new_media_dict.append(mastodon_instance.media_post(
+                f_temp.name, description=media.description))
+        finally:  
+            f_temp.close() # again for good measure
+            os.unlink(f_temp.name) # delete temporary file
     return(new_media_dict)
 
 
@@ -289,7 +297,7 @@ def parse_arguments():
     a while and would otherwise (re)post lots of old group-toots.
 
     -d, --dry-run: Parse new messages but do not upload or toot anything.
-    Shows the ID of messages it would have processed instead
+    Shows the ID of notifications it would have processed instead
 
     -k, --ketchup: Same as above, for the sake of lol.
 
@@ -303,7 +311,7 @@ def parse_arguments():
         "while and would otherwise (re)post lots of old group-toots.")
     parser.add_argument("-d", "--dry-run", action="store_true",
         help="Parse new messages but do not upload or toot anything. "
-        "Shows the ID of messages it would have processed instead.")
+        "Shows the ID of notifications it would have processed instead.")
     parser.add_argument("-k", "--ketchup", action="store_true",
         help="Same as -c or --catch-up for the sake of lol!")
     parser.add_argument("-u", "--user",  default="default", 

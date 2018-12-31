@@ -8,6 +8,7 @@ Change Log
 
 - Commandline flag to catch up with the current timeline without posting anything
 - Commandline flag to dry-run without updating or posting anything - useful for testing
+- Media files are now cached using Python's tempfile function
 
 [0.6] 2018-11-08
 ----------------
