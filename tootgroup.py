@@ -21,6 +21,7 @@ import requests
 import sys
 import tempfile
 
+from appdirs import AppDirs
 from mastodon import Mastodon
 
 
@@ -28,17 +29,19 @@ from mastodon import Mastodon
 # Execution starts here.
 def main():
 
-    # Get the user the script is running for.
+    # Read commandline arguments and flags from input
     my_commandline_arguments = parse_arguments()
-    
-    # TODO: standard storage place for config (and tmp files?)
-    # TODO: remove ramaining temp files from last run if the script did not close cleanly
-    my_config_file = "tootgroup.conf"
+
+    # Get the configuration storage loocation
+    my_config_dir, my_config_file = setup_configuration_path("tootgroup.py",
+        "tootgroup.conf") 
     write_new_config = False
+
+    # Get the Mastodon account handle the script is running for.
     my_group_name = my_commandline_arguments["group_name"]
-    
+
     # Get and validate configuration from the config file.
-    my_config = parse_configuration(my_config_file, my_group_name)
+    my_config = parse_configuration(my_config_dir, my_config_file, my_group_name)
 
     # If the "catch-up" commandline argument has been given, reset the last seen
     # ID so that tootgroup.py only updates its according config value without
@@ -48,24 +51,20 @@ def main():
     
     # Create Mastodon API instance.
     mastodon = Mastodon(
-        client_id = my_config[my_group_name]["client_id"],
-        access_token = my_config[my_group_name]["access_token"],
+        client_id = my_config_dir + my_config[my_group_name]["client_id"],
+        access_token = my_config_dir + my_config[my_group_name]["access_token"],
         api_base_url = my_config[my_group_name]["mastodon_instance"]
     )
     
     try:
-        # Get the group account and all corresponding information
-        # name, id, group members (== accounts followed by the group)
-        # their IDs and the time of the group's last toot.
+        # Get the group account information
         #
-        # This connects to the Mastodon server for the first time - catch any
-        # excpetions that may occur from that here.
+        # This connects to the Mastodon server for the first time.
+        # TODO: catch any excpetions that may occur from that here.
         my_account = {
             "username": mastodon.account_verify_credentials().username, 
             "id": mastodon.account_verify_credentials().id, 
-            "group_members": "", 
-            "group_member_ids": [], 
-            "last_toot_time":  ""
+            "group_member_ids": []
         }
     except Exception as e:
         print("")
@@ -78,9 +77,10 @@ def main():
         print("for a new setup.")
         print("########################################################\n")
         sys.exit(0)
-    # Extract account information that could not be fetched directly    
-    my_account["group_members"] = mastodon.account_following(my_account["id"])
-    for member in my_account["group_members"]:
+
+    # Get group member IDs that could net be fetched directly while
+    # connecting to the Mastodon server.
+    for member in mastodon.account_following(my_account["id"]):
         my_account["group_member_ids"].append(member.id)
     
     # Do we accept direct messages, public retoots, both or none? This
@@ -100,13 +100,13 @@ def main():
     
     # TODO: check what happens if there are no or too few notifications yet
     #
-    # Get notifications, stop if either the last known notification ID or
+    # Get notifications. Stop if either the last known notification ID or
     # the maximum number is reached. Chunk size is limited to 40 by Mastodon
-    # but can be reduced further by the server setup. 
+    # but could be reduced further by any specific server instance. 
     while get_more_notifications:
         get_notifications = mastodon.notifications(max_id = max_notification_id)
         
-        # remember the ID of the latest notification during the first iteration
+        # remember the ID of the latest notification on first iteration
         if notification_count == 0:
             latest_notification_id = get_notifications[0].id
         
@@ -120,7 +120,8 @@ def main():
         for notification in get_notifications:
             max_notification_id = notification.id
             
-            if notification.id > int(my_config[my_group_name]["last_seen_id"]) and notification_count < max_notifications:
+            if (notification.id > int(my_config[my_group_name]["last_seen_id"]) and
+                    notification_count < max_notifications):
                 my_notifications.append(notification)
             else:
                 get_more_notifications = False
@@ -128,7 +129,7 @@ def main():
             notification_count += 1
     
     # If there have been new notifications since the last run, update "last_seen_id"
-    # and update config file to persist the new value.
+    # and write config file to persist the new value.
     if latest_notification_id > int(my_config[my_group_name]["last_seen_id"]):
         my_config[my_group_name]["last_seen_id"] = str(latest_notification_id)
         write_new_config = True
@@ -154,7 +155,8 @@ def main():
                             mastodon.status_reblog(notification.status.id)
                             print("Retooted from notification ID: " + str(notification.id))
                         else:
-                            print("DRY RUN - would have retooted from notification ID: " + str(notification.id))
+                            print("DRY RUN - would have retooted from notification ID: "
+                                + str(notification.id))
     
             # Is reposting of direct messages configured? - if yes then:
             # Look for direct messages
@@ -174,43 +176,44 @@ def main():
                         # Repost as a new status
                         mastodon.status_post(
                             new_status,
-                            media_ids = media_toot_again(notification.status.media_attachments, mastodon),
+                            media_ids = media_toot_again(notification.status.media_attachments,
+                                mastodon),
                             sensitive = notification.status.sensitive,
                             visibility = "public",
                             spoiler_text = notification.status.spoiler_text
                         )
                         print("Newly posted from notification ID: " + str(notification.id))
                     else:
-                        print("DRY RUN - would have newly posted from notification ID: " + str(notification.id))
+                        print("DRY RUN - would have newly posted from notification ID: "
+                            + str(notification.id))
     
     # There have been changes requiring to persist the new configuration
     # but not in a dry-run condition
     if write_new_config and not my_commandline_arguments["dry_run"]:
-        write_configuration(my_config_file, my_config)
+        write_configuration(my_config_dir, my_config_file, my_config)
     
     print("Successful tootgroup.py run for " + "@" + my_account["username"] +
         " at " + my_config[my_group_name]["mastodon_instance"])
-
 
 
 def media_toot_again(orig_media_dict, mastodon_instance):
     """Re-upload media files to Mastodon for use in another toot.
     
     "orig_media_dict" - extracted media files from the original toot
-    "mastodon_instance" - needed to upload the media files again and create
+
+    "mastodon_instance" - needed to re-upload the media files and create
     a new media_dict.
     
     Mastodon does not allow the re-use of already uploaded media files (images,
     videos) in a new toot. This function downloads all media files from a toot
-    and uploads them again.
-    
-    It returns a dict formatted in a proper way to be used by the 
-    Mastodon.status_post() function."""
+    and re-uploads them. It then returns a dict formatted in a proper way for
+    being used by the Mastodon.status_post() function."""
     new_media_dict = []
     for media in orig_media_dict:
         media_data = requests.get(media.url).content
         filename = os.path.basename(media.url)
-        # basename still includes a "?" followed by a number after the file's name. Remove them both.
+        # basename still includes a "?" followed by a number after the file's name.
+        # Remove them both.
         filename = filename.split("?")[0]
         # separate filename and extension
         filename, file_ext = os.path.splitext(filename)
@@ -222,16 +225,19 @@ def media_toot_again(orig_media_dict, mastodon_instance):
             new_media_dict.append(mastodon_instance.media_post(
                 f_temp.name, description=media.description))
         finally:  
-            f_temp.close() # again for good measure
+            f_temp.close() # close again for good measure
             os.unlink(f_temp.name) # delete temporary file
     return(new_media_dict)
 
 
 
-def new_credentials_from_mastodon(group_name, config):
+def new_credentials_from_mastodon(group_name, config_dir, config):
     """Register tootgroup.py at a Mastodon server and get user credentials.
     
     "group_name" points to the current groups settings in the config file
+
+    "config_dir" directory where the config and credentials are stored
+
     "config" the configuration as read in from configparser
     
     This will be run if tootgroup.py is started for the first time, if its
@@ -244,11 +250,11 @@ def new_credentials_from_mastodon(group_name, config):
         Mastodon.create_app(
             "tootgroup.py",
             api_base_url = config[group_name]["mastodon_instance"],
-            to_file = config[group_name]["client_id"]
+            to_file = config_dir + config[group_name]["client_id"]
         )
         # Create Mastodon API instance
         mastodon = Mastodon(
-            client_id = config[group_name]["client_id"],
+            client_id = config_dir + config[group_name]["client_id"],
             api_base_url = config[group_name]["mastodon_instance"]
         )
     except Exception as e:
@@ -267,9 +273,9 @@ def new_credentials_from_mastodon(group_name, config):
         i+=1
         try:
             mastodon.log_in(
-                input("Username (e-Mail): "),
+                input("Username (e-Mail) to log into Mastodon Instance: "),
                 input("Password: "),
-                to_file = config[group_name]["access_token"]
+                to_file = config_dir + config[group_name]["access_token"]
             )
             break
         except Exception:
@@ -297,32 +303,33 @@ def parse_arguments():
     a while and would otherwise (re)post lots of old group-toots.
 
     -d, --dry-run: Parse new messages but do not upload or toot anything.
-    Shows the ID of notifications it would have processed instead
+    Shows the ID of notifications it would have processed instead.
 
-    -k, --ketchup: Same as above, for the sake of lol.
+    -g, --group: group handle the script is currently running for. Needed
+    by configparser to find its configuration and can be chosen freely.
 
-    -u, --user: user the script is currently running for. Needed by configparser
-    to find its configuration."""
-    
+    -k, --ketchup: Same as -c or --catch-up, for the sake of lol."""
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--catch-up", action="store_true",
-        help="Catch up to the current state of the timeline without tooting "
-        "anything. This is useful if the script has not been running for a "
+        help="Catch up to the current state of the timeline without tooting " +
+        "anything. This is useful if the script has not been running for a " +
         "while and would otherwise (re)post lots of old group-toots.")
     parser.add_argument("-d", "--dry-run", action="store_true",
-        help="Parse new messages but do not upload or toot anything. "
+        help="Parse new messages but do not upload or toot anything. " +
         "Shows the ID of notifications it would have processed instead.")
+    parser.add_argument("-g", "--group",  default="default", 
+        help="Input a handle for the Mastodon account. tootgroup.py stores all " +
+        "information connected to a specific group account under this name. " +
+        "By choosing different handles it is possible to manage multiple " +
+        "Mastodon groups from the same skript. This can be chosen freely but " +
+        " it is wise to use a name that is related to the Mastodon account " +
+        " it will be used with. If no handle is given, " +
+        "\"%(default)s\" is always used instead.")
     parser.add_argument("-k", "--ketchup", action="store_true",
         help="Same as -c or --catch-up for the sake of lol!")
-    parser.add_argument("-u", "--user",  default="default", 
-        help="Input username for the Mastodon group. tootgroup.py stores all "
-        "information connected to a specific group account under this name. "
-        "By choosing different names it is possible to manage multiple "
-        "Mastodon groups from the same skript. If no username is given, user "
-        "\"%(default)s\" is always used instead.")
     args = parser.parse_args()    
     arguments = {}
-    arguments["group_name"] = args.user
+    arguments["group_name"] = args.group
     arguments["catch_up"] = False
     arguments["dry_run"] = False
     if args.catch_up or args.ketchup:
@@ -334,10 +341,13 @@ def parse_arguments():
 
 
 
-def parse_configuration(config_file,  group_name):
+def parse_configuration(config_dir, config_file,  group_name):
     """Read configuration from file, handle first-run situations and errors.
     
-    "config_file" the path to the configuration file
+    "config_dir" the OS specific path to the configuration directory 
+
+    "config_file" the name of the configuration file 
+
     "group_name" determines the section to be read by configparser
     
     parse_configuration() uses Pyhon's configparser to read and interpret the
@@ -348,7 +358,7 @@ def parse_configuration(config_file,  group_name):
     
     parse_configuration should always return a complete and usable configuration"""
     config = configparser.ConfigParser()
-    config.read(config_file)
+    config.read(config_dir + config_file)
     get_new_credentials = False
     write_new_config = False
     
@@ -377,7 +387,7 @@ def parse_configuration(config_file,  group_name):
         config[group_name]["client_id"] = group_name + "_clientcred.secret"
         get_new_credentials = True
         write_new_config = True
-    if not os.path.isfile(config[group_name]["client_id"]):
+    if not os.path.isfile(config_dir + config[group_name]["client_id"]):
         get_new_credentials = True
     
     # Where can the user access token be found and does the file exist?
@@ -388,16 +398,18 @@ def parse_configuration(config_file,  group_name):
         config[group_name]["access_token"] = group_name + "_usercred.secret"
         get_new_credentials = True
         write_new_config = True
-    if not os.path.isfile(config[group_name]["access_token"]):
+    if not os.path.isfile(config_dir + config[group_name]["access_token"]):
         get_new_credentials = True
     
     # Should tootgroup.py accept direct messages for reposting?
     if not config.has_option(group_name,  "accept_dms"):
         config[group_name]["accept_dms"] = ""
-    if (config[group_name]["accept_dms"] == "") or (config[group_name]["accept_dms"] not in ("yes",  "no")):
+    if ((config[group_name]["accept_dms"] == "") or
+            (config[group_name]["accept_dms"] not in ("yes",  "no"))):
         str = ""
         while True:
-            str = input("\nShould tootgroup.py repost direct messages from group users? [yes/no]: ")
+            str = input("\nShould tootgroup.py repost direct messages " +
+                        "from group members? [yes/no]: ")
             if str.lower() not in ("yes",  "no"):
                 print("Please enter 'yes' or 'no'!")
                 continue
@@ -409,10 +421,12 @@ def parse_configuration(config_file,  group_name):
     # Should tootgroup.py accept public mentions for retooting?
     if not config.has_option(group_name,  "accept_retoots"):
         config[group_name]["accept_retoots"] = ""
-    if (config[group_name]["accept_retoots"] == "") or (config[group_name]["accept_retoots"] not in ("yes",  "no")):
+    if ((config[group_name]["accept_retoots"] == "") or
+            (config[group_name]["accept_retoots"] not in ("yes",  "no"))):
         str = ""
         while True:
-            str = input("\nShould tootgroup.py retoot public mentions from group users? [yes/no]: ")
+            str = input("\nShould tootgroup.py retoot public mentions " +
+                        "from group members? [yes/no]: ")
             if str.lower() not in ("yes",  "no"):
                 print("Please enter 'yes' or 'no'!")
                 continue
@@ -425,33 +439,81 @@ def parse_configuration(config_file,  group_name):
     # notifications and will be persisted here. It is initially set up with
     # "catch-up" to indicate this situation.
     # Tootgroup.py will then get sane values and continue.
-    if (not config.has_option(group_name,  "last_seen_id")) or (config[group_name]["last_seen_id"] == ""):
+    if ((not config.has_option(group_name,  "last_seen_id")) or
+            (config[group_name]["last_seen_id"] == "")):
         config[group_name]["last_seen_id"] = "catch-up"
         write_new_config = True    
     
     # Some registration info or credentials were missing - we have to register
     # tootgroup.py with our Mastodon server instance. (again?)
     if get_new_credentials:
-        new_credentials_from_mastodon(group_name, config)
+        print("Some credentials are missing, need to get new ones...")
+        new_credentials_from_mastodon(group_name, config_dir, config)
     
     # Have there been any changes to the configuration?
     # If yes we have to write them to the config file
     if write_new_config:
-        write_configuration(config_file, config)
+        write_configuration(config_dir, config_file, config)
     
     # Configuration should be complete and working now - return it.
     return(config)
 
 
-def write_configuration(config_file,  config):
-    """Write out the configuration into the config file..
+def setup_configuration_path(application_name, config_filename):
+    """Search for the configuration file location. Start with the
+    skript's home directory and try the OS specific user configuration
+    directory next. Local takes precedence but if no configuration
+    is found, the new one will be created in the OS specific user
+    config path. This is to ensure backwards-compatibility and
+    to enable local overrides for development/testing
     
-    "config_file" the path to the configuration file
+    "application_name" name of the application used for locating
+    the operating specific config storage path.
+
+    "config_filename" name of the configuration file
+
+    Returns a tuple containing the path to the configuration dir
+    and the name of the config file"""
+    local_path = os.path.dirname(os.path.realpath(__file__)) + "/"
+    os_user_config_path = AppDirs(application_name).user_data_dir + "/"
+    config_dir = local_path
+
+    # Is there a config file in the tootgroup.py directory?
+    if os.path.isfile(local_path + config_filename):
+        print("Found local configuration files and using them...")
+
+    # Is there a config file in the systems user config directory?
+    elif os.path.isfile(os_user_config_path + config_filename):
+        config_dir = os_user_config_path
+        # This is the default, do not output anything
+    
+    # Did not find any config file, default to user config dir!
+    else:
+        config_dir = os_user_config_path
+        # Create config dir if it does not exist yet
+        os.makedirs(config_dir, exist_ok=True)
+        print ("No configuration found!")
+        print ("tootgroup.py will continue and ask for every " +
+        "information it needs...\nConfiguration will be stored at " +
+        config_dir + "\n")
+
+    return(config_dir, config_filename)
+
+
+
+def write_configuration(config_dir, config_file,  config):
+    """Write out the configuration into the config file.
+    
+    "config_dir" the path to the configuration directory 
+    
+    "config_file" the name of the configuration file 
+
     "config" configparser object containing the current configuration.
     
     This can be called whenever the configuration needs to be persisted by
     writing it to the disk."""
-    with open(config_file, "w") as configfile:
+
+    with open(config_dir + config_file, "w") as configfile:
             config.write(configfile)
 
 

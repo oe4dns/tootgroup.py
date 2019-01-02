@@ -1,14 +1,29 @@
 Change Log
 ==========
 
-[0.7] 20??-??-??
+[0.7] 2019-01-03
 ----------------
 
 ### ADDED
 
 - Commandline flag to catch up with the current timeline without posting anything
 - Commandline flag to dry-run without updating or posting anything - useful for testing
+
+### CHANGED
+
+- The "-u" "--user" commandline flag has been changed to "-g" "--group" for the sake
+  of consistency with what it acutally does.
 - Media files are now cached using Python's tempfile function
+- Configuration is now stored in an OS specific location by default but local files
+  will still override it. This way upgrades just continue to work like before and
+  it is possible to keep the configuration next to the script file if preferred. This
+  introduces the additional "appdirs" module dependency!
+
+### UPGRADE NOTES - Manual intervention required!
+
+- Change the "-u" "--user" flag in your scripts and/or crontab entries to "-g" or "--group"
+- Install the new "appdir" module dependency either manually, via pip or your system's
+  packet manager.
 
 [0.6] 2018-11-08
 ----------------
@@ -23,7 +38,8 @@ Change Log
 
 - Further improved shared mode. No more difference necessary between it and
   exclusive account access by `tootgroup.py`
-  Notification IDs are now used to determine which ones are new and have to be considered for posting.
+  Notification IDs are now used to determine which ones are new and have to be considered
+  for posting.
 
 [0.5.2] 2018-10-31
 ------------------

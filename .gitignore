@@ -4,3 +4,4 @@ tootgroup.conf
 *secret*
 tootgroup.code-workspace
 .vscode
+.gitignore

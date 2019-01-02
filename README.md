@@ -31,57 +31,60 @@ anything.
 How to set up?
 --------------
 
-`tootgroup.py` is already very usable but not yet feature-complete and still in
-development. It will help you with setup by asking all information it needs when
-you run it from the commandline for the first time. Beeing somewhat comfortable
-with Python scripting and the commandline in general might help tough if
-difficulties should appear.
+`tootgroup.py` will help you with setup by asking all information it needs when
+you run it from the commandline for the first time. Being somewhat comfortable
+with Python scripting and the commandline in general might help tough, if
+difficulties should appear. While `tootgroup.py` is feature complete already,
+it is still in beta and needs more testing.
 
-1. You require <https://github.com/halcy/Mastodon.py> to run.
-   Install it via your operating system's package manager, pip or even manually
+1. You require <https://github.com/halcy/Mastodon.py> as well as
+   <https://github.com/ActiveState/appdirs> to run. Install them via your
+   operating system's package manager, pip or even manually
 
 2. You need an account on any Mastodon instance/server that will act as your
    group account. Think about if you should mark it as a "Bot".
 
-3. Run `tootgroup.py` from the command line in a directory that it can write to.
-   Input all required information and register with your Mastodon instance.
+3. Run `tootgroup.py` from the command line.
 
-4. `tootgroup.py` will ask you for all needed setup information and try to get
-   it right by connecting with the Mastodon server. If it cannot do so, it will tell
-   you and you can try again. When successful, `tootgroup.py` will write the
-   configuration to its .conf file and read it from there next time you run the
-   script. Every successful run will print an according message to the command line.
+4. `tootgroup.py` will ask you for all needed setup data and try to get them
+   right by connecting to the Mastodon server. If it cannot do so, it will
+   tell you and you can retry. When successful, `tootgroup.py` will write the
+   configuration to its tootgroup.conf file and read it from there next time
+   you run the script.
+
+   The standard configuration store is operating system dependent but will be
+   shown during the first-run/setup phase. A local tootgroup.conf file placed
+   next to the `tootgroup.py` script will override these settings tough and can
+   be used for testing or other purposes.
 
 5. If you want to set up `tootgroup.py` for more than one group, you can run it
-   again while specifying the "--user username" flag. It will then generate an
-   independent configuration that will be read every thime you call
-   `tootgroup.py` with this user. If you don't specify any, the user "default"
-   will be created and used.
+   again while specifying the "--group GROUP_HANDLE" flag. This will then
+   generate an independent configuration that will be read every thime you call
+   `tootgroup.py` using this name. If you don't specify any, the handle "default"
+   is created and used automatically
 
 6. Test the funcionality by sending direct messages and "!@mentions" to your
-   group while manually running `tootgroup.py`. See if everything works as expected.
-   If it does, you can run the script periodically via cron and enjoy groop-tooting!
+   group while running `tootgroup.py` manually. See if things work as expected.
+   The script will print an according message after each successful run.
+   If everything works, run the script periodically via cron and enjoy
+   groop-tooting!
 
-    Here is an example for a crontab entry that runs `tootgroup.py` every two minutes:
+   Here is an example for a crontab entry that runs `tootgroup.py` every two minutes:
 
-    `*/2 * * * * cd /home/username/bin/ && python3 tootgroup.py --user default`
+   `*/2 * * * * /path/to/tootgroup.py --group default`
+
+7. There is also the "-d" or "--dry-run" commandline flag that prevents any toots.
+   You can use it to test what would be posted by the script.
+
+   Use "-h" or "--help" for more information about all available options
 
 Planned Features and Whishlist items
 ------------------------------------
 
-### TODO: Error handling
+### TODO: Error handling - v0.8
 
     Currently there is not much... which is still bad
 
-### TODO: file management
+### TODO: Testing - v0.9
 
-    Currently tootgroup.py simply runs from a directory where it will also
-    keep all its configuration specific and temporary files. In Linux things
-    will be moved to a user specific dot-directory and maybe the /tmp folder.
-    for other platforms look at the "multi-platform" task.
-
-### TODO: multi-platform
-
-    While Python is pretty platform independent, tootgroup.py has only been
-    tested on Linux using Python 3. That concerns mostly the user configuration
-    as well as (temporary) file management.
+    Especially on platforms other than Linux
