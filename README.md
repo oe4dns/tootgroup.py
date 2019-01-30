@@ -52,16 +52,16 @@ it is still in beta and needs more testing.
    configuration to its tootgroup.conf file and read it from there next time
    you run the script.
 
-   The standard configuration store is operating system dependent but will be
+   The place for storing configuration is operating system dependent but will be
    shown during the first-run/setup phase. A local tootgroup.conf file placed
-   next to the `tootgroup.py` script will override these settings tough and can
+   next to the `tootgroup.py` script will override these settings though and can
    be used for testing or other purposes.
 
 5. If you want to set up `tootgroup.py` for more than one group, you can run it
    again while specifying the "--group GROUP_HANDLE" flag. This will then
    generate an independent configuration that will be read every thime you call
-   `tootgroup.py` using this name. If you don't specify any, the handle "default"
-   is created and used automatically
+   `tootgroup.py` using this name. If you don't specify any group name, the
+   handle "default" is created and used automatically
 
 6. Test the funcionality by sending direct messages and "!@mentions" to your
    group while running `tootgroup.py` manually. See if things work as expected.
