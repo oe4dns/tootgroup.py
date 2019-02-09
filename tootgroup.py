@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ## tootgroup.py
-## Version 0.7
+## Version 0.8
 ##
 ##
 ## Andreas Schreiner
@@ -57,10 +57,9 @@ def main():
     )
     
     try:
-        # Get the group account information
-        #
-        # This connects to the Mastodon server for the first time.
-        # TODO: catch any excpetions that may occur from that here.
+        # Get the group account information.
+        # This connects to the Mastodon server for the first time at
+        # every tootgroup.py's run.
         my_account = {
             "username": mastodon.account_verify_credentials().username, 
             "id": mastodon.account_verify_credentials().id, 
@@ -68,13 +67,14 @@ def main():
         }
     except Exception as e:
         print("")
-        print(e)
         print("\n########################################################")
         print("tootgroup.py could not connect to the Mastodon server.")
         print("If you know that it is running, there might be a")
-        print("problem with our local configuration.")
-        print("\nDelete tootgroup.py's config file and re-run the script")
-        print("for a new setup.")
+        print("problem with our local configuration. Check the error")
+        print("message for more details:")
+        print(e)
+        print("\nYou can always try to delete tootgroup.py's config file")
+        print("and re-run the script for a new setup.")
         print("########################################################\n")
         sys.exit(0)
 
@@ -196,6 +196,7 @@ def main():
         " at " + my_config[my_group_name]["mastodon_instance"])
 
 
+
 def media_toot_again(orig_media_dict, mastodon_instance):
     """Re-upload media files to Mastodon for use in another toot.
     
@@ -243,7 +244,6 @@ def new_credentials_from_mastodon(group_name, config_dir, config):
     This will be run if tootgroup.py is started for the first time, if its
     configuration files have been deleted or if some elements of the
     configuration are missing.
-    TODO: catch login/register errors and retry
     """
     # Register tootgroup.py app at the Mastodon server
     try:
@@ -259,11 +259,13 @@ def new_credentials_from_mastodon(group_name, config_dir, config):
         )
     except Exception as e:
         print("")
-        print(e)
-        print("\n###################################################################")
+        print("\n##################################################################")
         print("The Mastodon instance URL is wrong or the server does not respond.")
+        print("See the error message for more details:")
+        print(e)
+        print("")
         print("tootgroup.py will exit now. Run it again to try once more!")
-        print("###################################################################\n")
+        print("##################################################################\n")
         sys.exit(0)
  
     # Log in once with username and password to get an access token for future logins.
@@ -350,7 +352,7 @@ def parse_configuration(config_dir, config_file,  group_name):
 
     "group_name" determines the section to be read by configparser
     
-    parse_configuration() uses Pyhon's configparser to read and interpret the
+    parse_configuration() uses Python's configparser to read and interpret the
     config file. It will detect a missing config file or missing elements and
     then try to solve problems by asking the user for more information. This
     does also take care of a first run situation where nothing is set up yet and
@@ -366,12 +368,15 @@ def parse_configuration(config_dir, config_file,  group_name):
     # group. If not, create it now.
     if not config.has_section(group_name):
         config[group_name] = {}
+        print("Group \"" + group_name + "\" not in configuration. " +
+            "- Setting it up now...")
         write_new_config = True
     
     # Do we have a mastodon instance URL? If not, we have to
     # ask for it and register with our group's server first.
     if not config.has_option(group_name,  "mastodon_instance"):
         config[group_name]["mastodon_instance"] = ""
+        print("We need a Mastodon server to connect to!")
     if config[group_name]["mastodon_instance"] == "":
         config[group_name]["mastodon_instance"] = input("Enter the "
             "URL of the Mastodon instance your group account is "
@@ -464,11 +469,13 @@ def setup_configuration_path(application_name, config_filename):
     skript's home directory and try the OS specific user configuration
     directory next. Local takes precedence but if no configuration
     is found, the new one will be created in the OS specific user
-    config path. This is to ensure backwards-compatibility and
-    to enable local overrides for development/testing
+    config path if possible. If that fails, the local directory will
+    again be used as a last resort. This is to ensure
+    backwards-compatibility and to enable local overrides for
+    development/testing.
     
-    "application_name" name of the application used for locating
-    the operating specific config storage path.
+    "application_name" used to determine the operating system
+    specific config storage path.
 
     "config_filename" name of the configuration file
 
@@ -480,9 +487,9 @@ def setup_configuration_path(application_name, config_filename):
 
     # Is there a config file in the tootgroup.py directory?
     if os.path.isfile(local_path + config_filename):
-        print("Found local configuration files and using them...")
+        print("Found local configuration and using it...")
 
-    # Is there a config file in the systems user config directory?
+    # Is there a config file in the system's user config directory?
     elif os.path.isfile(os_user_config_path + config_filename):
         config_dir = os_user_config_path
         # This is the default, do not output anything
@@ -491,11 +498,22 @@ def setup_configuration_path(application_name, config_filename):
     else:
         config_dir = os_user_config_path
         # Create config dir if it does not exist yet
-        os.makedirs(config_dir, exist_ok=True)
-        print ("No configuration found!")
-        print ("tootgroup.py will continue and ask for every " +
-        "information it needs...\nConfiguration will be stored at " +
-        config_dir + "\n")
+        try:
+            os.makedirs(config_dir, exist_ok=True)
+            print("No configuration found!")
+            print("tootgroup.py will continue to run but first " +
+            "ask for all information it requires...\n" +
+            "Configuration will then be stored under " +
+            config_dir + "\n")
+        except Exception:
+            # Cannot create config directory, have to use the
+            # tootgroup.py dir instead 
+            config_dir = local_path
+            print("No configuration found!")
+            print("tootgroup.py will continue to run but first " +
+            "ask for all information it requires...\n" +
+            "Configuration will then be stored under " +
+            config_dir + "\n")
 
     return(config_dir, config_filename)
 
@@ -512,9 +530,18 @@ def write_configuration(config_dir, config_file,  config):
     
     This can be called whenever the configuration needs to be persisted by
     writing it to the disk."""
-
-    with open(config_dir + config_file, "w") as configfile:
+    try:
+        with open(config_dir + config_file, "w") as configfile:
             config.write(configfile)
+    except Exception as e:
+        print("")
+        print("\n############################################################")
+        print("Cannot write to configuration file:")
+        print(e)
+        print("Try to fix the problem and run toogroup.py again afterwards.")
+        print("############################################################\n")
+        sys.exit(0)
+            
 
 
 # Start executing main() function if the script is called from a command line
