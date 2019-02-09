@@ -207,8 +207,8 @@ def media_toot_again(orig_media_dict, mastodon_instance):
     
     Mastodon does not allow the re-use of already uploaded media files (images,
     videos) in a new toot. This function downloads all media files from a toot
-    and re-uploads them. It then returns a dict formatted in a proper way for
-    being used by the Mastodon.status_post() function."""
+    and re-uploads them. It then returns a dict formatted in a proper way to
+    be used by the Mastodon.status_post() function."""
     new_media_dict = []
     for media in orig_media_dict:
         media_data = requests.get(media.url).content
@@ -219,15 +219,26 @@ def media_toot_again(orig_media_dict, mastodon_instance):
         # separate filename and extension
         filename, file_ext = os.path.splitext(filename)
         f_temp = tempfile.NamedTemporaryFile(suffix=file_ext, delete=False, mode="w+b")
-        # TODO: catch and handle errors
         try:  
             f_temp.write(media_data)
             f_temp.close() # close to flush data
+            # This re-uploads the current media file to Mastodon!
             new_media_dict.append(mastodon_instance.media_post(
                 f_temp.name, description=media.description))
+        except Exception as e:
+            print("")
+            print("\n##################################################################")
+            print("Cannot write media to temporary file:")
+            print(e)
+            print("")
+            print("tootgroup.py will continue but media files might not get reposted!")
+            print("##################################################################\n")
         finally:  
             f_temp.close() # close again for good measure
-            os.unlink(f_temp.name) # delete temporary file
+            try:
+                os.unlink(f_temp.name) # delete temporary file
+            except Exception:
+                pass # cannot delete, probably non-existant anyway! 
     return(new_media_dict)
 
 
