@@ -81,10 +81,8 @@ it is still in beta and needs more testing.
 Planned Features and Whishlist items
 ------------------------------------
 
-### TODO: Error handling - v0.8
+### TODO: Testing
 
-    Currently there is not much... which is still bad
-
-### TODO: Testing - v0.9
-
-    Especially on platforms other than Linux
+    Especially on platforms other than Linux. There might be an additional
+    version 0.9 release if bugs are found in 0.8. Otherwise v1.0 final will be
+    released next.

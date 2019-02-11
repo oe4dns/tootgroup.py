@@ -98,18 +98,25 @@ def main():
     my_notifications = []
     get_more_notifications = True
     
-    # TODO: check what happens if there are no or too few notifications yet
-    #
     # Get notifications. Stop if either the last known notification ID or
     # the maximum number is reached. Chunk size is limited to 40 by Mastodon
     # but could be reduced further by any specific server instance. 
+    # TODO: fix  here
     while get_more_notifications:
         get_notifications = mastodon.notifications(max_id = max_notification_id)
         
-        # remember the ID of the latest notification on first iteration
+        # Remember the ID of the latest notification on first iteration
         if notification_count == 0:
-            latest_notification_id = get_notifications[0].id
-        
+            if len(get_notifications) > 0:
+                latest_notification_id = get_notifications[0].id
+            else: # If there have not been any notifications yet, set value to "0"
+                latest_notification_id = 0
+                print("Nothing to do yet! Start interacting with your group account first.")
+                get_more_notifications = False
+        else: # leave the while loop if there are no more notifications fetched
+            if len(get_notifications) == 0:
+                get_more_notifications = False
+
         # Initialize "last_seen_id" on first run. Notifications are ignored up
         # to this point, but newer ones will be considered subsequently.
         if my_config[my_group_name]["last_seen_id"] == "catch-up":
@@ -125,6 +132,7 @@ def main():
                 my_notifications.append(notification)
             else:
                 get_more_notifications = False
+                break
             
             notification_count += 1
     

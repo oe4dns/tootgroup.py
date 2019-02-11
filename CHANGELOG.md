@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+[0.8] 2019-02-11
+----------------
+
+### ADDED
+
+- Exception Handling for file and network operations where necessary
+
 [0.7] 2019-01-03
 ----------------
 
@@ -19,7 +26,7 @@ Change Log
   it is possible to keep the configuration next to the script file if preferred. This
   introduces the additional "appdirs" module dependency!
 
-### UPGRADE NOTES - Manual intervention required!
+### UPGRADE NOTES - Manual intervention required
 
 - Change the "-u" "--user" flag in your scripts and/or crontab entries to "-g" or "--group"
 - Install the new "appdir" module dependency either manually, via pip or your system's
