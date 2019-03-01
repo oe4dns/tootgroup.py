@@ -39,7 +39,7 @@ it is still in beta and needs more testing.
 
 1. You require <https://github.com/halcy/Mastodon.py> as well as
    <https://github.com/ActiveState/appdirs> to run. Install them via your
-   operating system's package manager, pip or even manually
+   operating system's package manager, pip or even manually.
 
 2. You need an account on any Mastodon instance/server that will act as your
    group account. Think about if you should mark it as a "Bot".
@@ -78,7 +78,21 @@ it is still in beta and needs more testing.
 
    Use "-h" or "--help" for more information about all available options
 
-Planned Features and Whishlist items
+Tested on following platforms
+-----------------------------
+
+1. `Linux`: Use your package manager and/or pip to get the dependencies. Easy, no
+   hassle install.
+
+2. `Windows`: Easiest way is to use the Linux subsystem for Windows 10. `tootgroup.py`
+   also runs on the standard install from python.org too. For compiling some of the
+   python dependencies the (free of charcge) Visual Studio Build Tools might be
+   necessary in that case tough.
+
+3. `TBD`:
+
+
+Planned Features and Wishlist items
 ------------------------------------
 
 ### TODO: Testing

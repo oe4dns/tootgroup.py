@@ -101,7 +101,6 @@ def main():
     # Get notifications. Stop if either the last known notification ID or
     # the maximum number is reached. Chunk size is limited to 40 by Mastodon
     # but could be reduced further by any specific server instance. 
-    # TODO: fix  here
     while get_more_notifications:
         get_notifications = mastodon.notifications(max_id = max_notification_id)
         
