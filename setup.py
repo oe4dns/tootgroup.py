@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="tootgroup.py",
-    version="0.9.0",
+    version="1.0.0",
     author="Andreas Schreiner",
     author_email="andreas.schreiner@sonnenmulde.at",
     description="Emulate group accounts on Mastodon",

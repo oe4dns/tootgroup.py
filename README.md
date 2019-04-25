@@ -31,22 +31,21 @@ anything.
 How to set up?
 --------------
 
-TODO: setup via pip
 The easiest way to install `tootgroup.py` is via PyPI, the Python Package Index.
-jadajadajada Dependencies ftw...
+Use `pip3 install tootgroup.py` to install it as well as all its dependencies.
 
 It is also possible to download the script manually from the GitHub repository at
-<https://github.com/oe4dns/tootgroup.py.> In that case all necessary dependencies
+<https://github.com/oe4dns/tootgroup.py> In that case the necessary dependencies
 have to be provided too:
 
 `tootgroup.py` requires <https://github.com/halcy/Mastodon.py> as well as
 <https://github.com/ActiveState/appdirs> to run. Install them via your
 operating system's package manager, pip or even manually.
 
-`tootgroup.py` will help you with setup by asking all information it needs when
-you run it from the commandline for the first time. Being somewhat comfortable
-with Python scripting and the commandline in general might help if difficulties
-should appear.
+`tootgroup.py` will guide you through setup by asking all information it needs
+when you run it from the commandline for the first time. Being somewhat
+comfortable with Python scripting and the commandline in general might help
+if difficulties should appear.
 
 1. You need an account on any Mastodon instance/server that will act as your
    group account. Think about if you should mark it as a "Bot".
@@ -62,11 +61,11 @@ should appear.
    The place for storing configuration is operating system dependent but will be
    shown during the first-run/setup phase. A local tootgroup.conf file placed
    next to the `tootgroup.py` script will override these settings though and can
-   be used for testing or other purposes.
+   be used for development or testing purposes.
 
 4. If you want to set up `tootgroup.py` for more than one group, you can run it
    again while specifying the "--group GROUP_HANDLE" flag. This will then
-   generate an independent configuration that will be read every thime you call
+   generate an independent configuration that will be read each time you call
    `tootgroup.py` using this name. If you don't specify any group name, the
    handle "default" is created and used automatically
 
@@ -84,10 +83,3 @@ should appear.
    You can use it to test what would be posted by the script.
 
    Use "-h" or "--help" for more information about all available options
-
-Planned Features and Wishlist items
-------------------------------------
-
-### TODO: Release on PyPi
-
-    Version 1.0 will be released as a PyPI package too.
