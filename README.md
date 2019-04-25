@@ -22,8 +22,8 @@ of them can be enabled during the setup procedure.
 
 2. `tootgroup.py` can also look for direct messages from group members. It then
    extracts the status text as well as media files and creates a new public toot
-   directly from the group account. The originating user will not be shown publicly
-   but can still be seen by all group and instance administrators.
+   directly from the group account. The originating user will not be shown publicly.
+   (It can still be seen by all group and instance administrators tough!)
 
 If both repost methods are disabled, `tootgroup.py` will still run but not repost
 anything.
@@ -31,22 +31,29 @@ anything.
 How to set up?
 --------------
 
+TODO: setup via pip
+The easiest way to install `tootgroup.py` is via PyPI, the Python Package Index.
+jadajadajada Dependencies ftw...
+
+It is also possible to download the script manually from the GitHub repository at
+<https://github.com/oe4dns/tootgroup.py.> In that case all necessary dependencies
+have to be provided too:
+
+`tootgroup.py` requires <https://github.com/halcy/Mastodon.py> as well as
+<https://github.com/ActiveState/appdirs> to run. Install them via your
+operating system's package manager, pip or even manually.
+
 `tootgroup.py` will help you with setup by asking all information it needs when
 you run it from the commandline for the first time. Being somewhat comfortable
-with Python scripting and the commandline in general might help tough, if
-difficulties should appear. While `tootgroup.py` is feature complete already,
-it is still in beta and needs more testing.
+with Python scripting and the commandline in general might help if difficulties
+should appear.
 
-1. You require <https://github.com/halcy/Mastodon.py> as well as
-   <https://github.com/ActiveState/appdirs> to run. Install them via your
-   operating system's package manager, pip or even manually.
-
-2. You need an account on any Mastodon instance/server that will act as your
+1. You need an account on any Mastodon instance/server that will act as your
    group account. Think about if you should mark it as a "Bot".
 
-3. Run `tootgroup.py` from the command line.
+2. Run `tootgroup.py` from the command line.
 
-4. `tootgroup.py` will ask you for all needed setup data and try to get them
+3. `tootgroup.py` will ask you for all needed setup data and try to get them
    right by connecting to the Mastodon server. If it cannot do so, it will
    tell you and you can retry. When successful, `tootgroup.py` will write the
    configuration to its tootgroup.conf file and read it from there next time
@@ -57,13 +64,13 @@ it is still in beta and needs more testing.
    next to the `tootgroup.py` script will override these settings though and can
    be used for testing or other purposes.
 
-5. If you want to set up `tootgroup.py` for more than one group, you can run it
+4. If you want to set up `tootgroup.py` for more than one group, you can run it
    again while specifying the "--group GROUP_HANDLE" flag. This will then
    generate an independent configuration that will be read every thime you call
    `tootgroup.py` using this name. If you don't specify any group name, the
    handle "default" is created and used automatically
 
-6. Test the funcionality by sending direct messages and "!@mentions" to your
+5. Test the funcionality by sending direct messages and "!@mentions" to your
    group while running `tootgroup.py` manually. See if things work as expected.
    The script will print an according message after each successful run.
    If everything works, run the script periodically via cron and enjoy
@@ -73,30 +80,14 @@ it is still in beta and needs more testing.
 
    `*/2 * * * * /path/to/tootgroup.py --group default`
 
-7. There is also the "-d" or "--dry-run" commandline flag that prevents any toots.
+6. There is also the "-d" or "--dry-run" commandline flag that prevents any toots.
    You can use it to test what would be posted by the script.
 
    Use "-h" or "--help" for more information about all available options
 
-Tested on following platforms
------------------------------
-
-1. `Linux`: Use your package manager and/or pip to get the dependencies. Easy, no
-   hassle install.
-
-2. `Windows`: Easiest way is to use the Linux subsystem for Windows 10. `tootgroup.py`
-   also runs on the standard install from python.org too. For compiling some of the
-   python dependencies the (free of charcge) Visual Studio Build Tools might be
-   necessary in that case tough.
-
-3. `TBD`:
-
-
 Planned Features and Wishlist items
 ------------------------------------
 
-### TODO: Testing
+### TODO: Release on PyPi
 
-    Especially on platforms other than Linux. There might be an additional
-    version 0.9 release if bugs are found in 0.8. Otherwise v1.0 final will be
-    released next.
+    Version 1.0 will be released as a PyPI package too.
