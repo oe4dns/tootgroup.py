@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+[1.0] 2019-04-26
+----------------
+
+### ADDED
+
+- Also release `tootgroup.py` as a PyPI package on
+  <https://pypi.org/project/tootgroup.py>
+- One-OH Release - YAY!
+
 [0.8] 2019-02-11
 ----------------
 
