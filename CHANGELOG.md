@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+[1.1] Unreleased
+----------------
+
+### ADDED
+
+- Unlisted Mode: Toots only visible for followers but not in local instance timeline
+
 [1.0] 2019-04-26
 ----------------
 
