@@ -25,6 +25,7 @@ import requests
 import sys
 import tempfile
 
+# TODO: manage imports do not use "from" to keep the namespace clean
 from appdirs import AppDirs
 from mastodon import Mastodon
 
