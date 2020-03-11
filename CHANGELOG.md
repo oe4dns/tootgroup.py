@@ -7,6 +7,8 @@ Change Log
 ### ADDED
 
 - Unlisted Mode: Toots only visible for followers but not in local instance timeline
+- Only create Toots from DMs if it start with the correct @mention
+- Respond with a DM (Error) message if there is a reason for not creating a new Toot from a mention
 
 [1.0] 2019-04-26
 ----------------
