@@ -25,10 +25,8 @@ import requests
 import sys
 import tempfile
 
-# TODO: manage imports do not use "from" to keep the namespace clean
-from appdirs import AppDirs
-from mastodon import Mastodon
-
+import appdirs
+import mastodon
 
 
 # Execution starts here.
@@ -55,7 +53,7 @@ def main():
         my_config[my_group_name]["last_seen_id"] = "catch-up" 
     
     # Create Mastodon API instance.
-    mastodon = Mastodon(
+    masto = mastodon.Mastodon(
         client_id = my_config_dir + my_config[my_group_name]["client_id"],
         access_token = my_config_dir + my_config[my_group_name]["access_token"],
         api_base_url = my_config[my_group_name]["mastodon_instance"]
@@ -66,8 +64,8 @@ def main():
         # This connects to the Mastodon server for the first time at
         # every tootgroup.py's run.
         my_account = {
-            "username": mastodon.account_verify_credentials().username, 
-            "id": mastodon.account_verify_credentials().id, 
+            "username": masto.account_verify_credentials().username, 
+            "id": masto.account_verify_credentials().id, 
             "group_member_ids": []
         }
     except Exception as e:
@@ -85,7 +83,7 @@ def main():
 
     # Get group member IDs that could net be fetched directly while
     # connecting to the Mastodon server.
-    for member in mastodon.account_following(my_account["id"]):
+    for member in masto.account_following(my_account["id"]):
         my_account["group_member_ids"].append(member.id)
     
     # Do we accept direct messages, public retoots, both or none? This
@@ -107,7 +105,7 @@ def main():
     # the maximum number is reached. Chunk size is limited to 40 by Mastodon
     # but could be reduced further by any specific server instance. 
     while get_more_notifications:
-        get_notifications = mastodon.notifications(max_id = max_notification_id)
+        get_notifications = masto.notifications(max_id = max_notification_id)
         
         # Remember the ID of the latest notification on first iteration
         if notification_count == 0:
@@ -164,7 +162,7 @@ def main():
                     status = re.sub("<.*?>", "", notification.status.content)
                     if repost_trigger in status:
                         if not my_commandline_arguments["dry_run"]:
-                            mastodon.status_reblog(notification.status.id)
+                            masto.status_reblog(notification.status.id)
                             print("Retooted from notification ID: " + str(notification.id))
                         else:
                             print("DRY RUN - would have retooted from notification ID: "
@@ -186,10 +184,10 @@ def main():
                     new_status = html.unescape(new_status)
                     if not my_commandline_arguments["dry_run"]:
                         # Repost as a new status
-                        mastodon.status_post(
+                        masto.status_post(
                             new_status,
                             media_ids = media_toot_again(notification.status.media_attachments,
-                                mastodon),
+                                masto),
                             sensitive = notification.status.sensitive,
                             visibility = "public",
                             spoiler_text = notification.status.spoiler_text
@@ -505,7 +503,7 @@ def setup_configuration_path(application_name, config_filename):
     Returns a tuple containing the path to the configuration dir
     and the name of the config file"""
     local_path = os.path.dirname(os.path.realpath(__file__)) + "/"
-    os_user_config_path = AppDirs(application_name).user_data_dir + "/"
+    os_user_config_path = appdirs.AppDirs(application_name).user_data_dir + "/"
     config_dir = local_path
 
     # Is there a config file in the tootgroup.py directory?
