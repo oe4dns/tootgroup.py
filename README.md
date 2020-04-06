@@ -20,13 +20,25 @@ of them can be enabled during the setup procedure.
 1. Public mentions of group members are boosted if they preceed the group's
    name with an Exclamation Mark like "!@mastodon"
 
-2. `tootgroup.py` can also look for direct messages from group members. It then
-   extracts the status text as well as media files and creates a new public toot
-   directly from the group account. The originating user will not be shown publicly.
-   (It can still be seen by all group and instance administrators tough!)
+2. `tootgroup.py` can also look for direct messages from group members. If the
+   group is @mentioned at the very beginning, The message will be reposted as
+   a new public toot originating directly from the group account. The status
+   text as well as media files are included. The originating user will not be
+   shown publicly. (It can still be seen by all group and instance
+   administrators tough!)
 
 If both repost methods are disabled, `tootgroup.py` will still run but not repost
 anything.
+
+But how to simply use it?
+-------------------------
+
+1. Write a message that should be boosted by the group: Just inlude
+   "!@group_name" wherever you want.
+
+2. Write a message that should appear as a new post from the group:
+   Put "!@group_name" at the very beginning of a direct/private message.
+   EXAMPLE: "!@mastodon HERE BE THE MESSAGE TEXT"
 
 How to set up?
 --------------
