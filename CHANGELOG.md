@@ -1,17 +1,19 @@
 Change Log
 ==========
 
-[1.1] Unreleased
+[1.2] Unreleased
 ----------------
 
 ### ADDED
 
 - Unlisted Mode: Toots only visible for followers but not in local instance timeline (choose at initial setup)
-- Respond with a DM (Error) message if there is a reason for not creating a new Toot from a mention
+
+[1.1] 2020-04-08
+----------------
 
 ### CHANGED
 
-- Only create Toots from DMs if it start with the correct @mention
+- Only create a toot from a DM if it begins with the @mention. Reply with an explanatory message to inform users why no toot was triggered in cases where the DM did not begin with the @mention.
 
 [1.0] 2019-04-26
 ----------------
@@ -92,7 +94,7 @@ Change Log
 - Added --user flag to configure and use multiple accounts
 - When sharing access to a group, `tootgroup.py` does no longer look for the last
   time it wrote anything to the group to determine what has happened since. In
-  that case its persists timestamps and checks when the last run has happened to
+  that case it persists timestamps and checks when the last run has happened to
   search for any new toots or direct messages to process. This is needed because
   any toots from other sources would cause `tootgroup.py` to miss notifications that
   happened between it and tootgroup's last run. This feature writes the config

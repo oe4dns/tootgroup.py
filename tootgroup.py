@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 ## tootgroup.py
-## Version 1.0
+## Version 1.1
 ##
 ##
 ## Andreas Schreiner
@@ -81,8 +81,8 @@ def main():
         print("########################################################\n")
         sys.exit(0)
 
-    # TODO: Check if account IDs are unique across all mastodon servers
-    # Get group member IDs. They could not be fetched directly while
+    # TODO: Version 1.2 Check if account IDs are unique across all mastodon
+    # servers Get group member IDs. They could not be fetched directly while
     # connecting to the Mastodon server.
     for member in masto.account_following(my_account["id"]):
         my_account["group_member_ids"].append(member.id)
@@ -292,16 +292,15 @@ def new_credentials_from_mastodon(group_name, config_dir, config):
     configuration files have been deleted or if some elements of the
     configuration are missing.
     """
-    # TODO: Fix References
     # Register tootgroup.py app at the Mastodon server
     try:
-        Mastodon.create_app(
+        mastodon.Mastodon.create_app(
             "tootgroup.py",
             api_base_url = config[group_name]["mastodon_instance"],
             to_file = config_dir + config[group_name]["client_id"]
         )
         # Create Mastodon API instance
-        mastodon = Mastodon(
+        masto = mastodon.Mastodon(
             client_id = config_dir + config[group_name]["client_id"],
             api_base_url = config[group_name]["mastodon_instance"]
         )
@@ -322,7 +321,7 @@ def new_credentials_from_mastodon(group_name, config_dir, config):
     while i < 3:
         i+=1
         try:
-            mastodon.log_in(
+            masto.log_in(
                 input("Username (e-Mail) to log into Mastodon Instance: "),
                 input("Password: "),
                 to_file = config_dir + config[group_name]["access_token"]
