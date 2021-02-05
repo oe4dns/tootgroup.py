@@ -1,12 +1,17 @@
 Change Log
 ==========
 
-[1.2] Unreleased
+[1.2] Unreleased/TODO
 ----------------
 
-### ADDED
+### ADD
 
 - Unlisted Mode: Toots only visible for followers but not in local instance timeline (choose at initial setup)
+
+### CHANGE
+
+- New config options require in-place config file updates, ideally without user interaciton.
+- Split source into multiple files
 
 [1.1] 2020-04-08
 ----------------
