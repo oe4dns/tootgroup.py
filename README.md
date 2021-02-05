@@ -33,8 +33,9 @@ anything.
 But how to simply use it?
 -------------------------
 
-1. Write a message that should be boosted by the group: Just inlude
-   "!@group_name" wherever you want.
+1. Write a message that should be boosted by the group: Just include
+   "!@group_name" anywhere in the toot.
+   EXAMPLE: "OHAI! just found that !@mastodon thingie!"
 
 2. Write a message that should appear as a new post from the group:
    Put "!@group_name" at the very beginning of a direct/private message.
