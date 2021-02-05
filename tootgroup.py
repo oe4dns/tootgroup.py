@@ -91,6 +91,7 @@ def main():
     # can be set in the configuration.
     accept_DMs = my_config[my_group_name].getboolean("accept_DMs")
     accept_retoots = my_config[my_group_name].getboolean("accept_retoots")
+    dm_visibility = my_config[my_group_name]["dm_visibility"]
     
     # Get all new notifications up to a maximum number set here.
     # Defaults to 100 and has to be changed in the code if really desired.
@@ -193,7 +194,7 @@ def main():
                                 media_ids = media_toot_again(notification.status.media_attachments,
                                     masto),
                                 sensitive = notification.status.sensitive,
-                                visibility = "public",
+                                visibility = dm_visibility,
                                 spoiler_text = notification.status.spoiler_text
                             )
                             print("Newly posted from DM with notification ID: " + str(notification.id))
@@ -468,6 +469,16 @@ def parse_configuration(config_dir, config_file,  group_name):
             else:
                 break
         config[group_name]["accept_dms"] = str.lower()
+        write_new_config = True
+
+    # How public should the toots from direct messages be?
+    while config[group_name].get("dm_visibility") not in {
+            'private', 'unlisted', 'public'}:
+
+        config[group_name]["dm_visibility"] = input(
+                "\nWhat visibility should the toots created from DMs " +
+                "have? Unlisted is recommended for testing, public for " +
+                "regular use.\n[private/unlisted/public]: ").lower()
         write_new_config = True
     
     # Should tootgroup.py accept public mentions for retooting?
