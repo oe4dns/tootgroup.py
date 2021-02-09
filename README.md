@@ -38,8 +38,8 @@ But how to simply use it?
    EXAMPLE: "OHAI! just found that !@mastodon thingie!"
 
 2. Write a message that should appear as a new post from the group:
-   Put "!@group_name" at the very beginning of a direct/private message.
-   EXAMPLE: "!@mastodon HERE BE THE MESSAGE TEXT"
+   Put "@group_name" at the very beginning of a direct/private message.
+   EXAMPLE: "@mastodon HERE BE THE MESSAGE TEXT"
 
 How to set up?
 --------------
