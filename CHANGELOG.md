@@ -1,8 +1,15 @@
 Change Log
 ==========
 
+[1.3] Unreleased/TODO
+---------------------
+
+### ADD
+
+- Additional script and/or functionality besides tootgroup.py that enables one or more accounts to be notified of all mentions and DMs directed to a specific (group)account.
+
 [1.2] Unreleased/TODO
-----------------
+---------------------
 
 ### ADD
 
@@ -11,7 +18,7 @@ Change Log
 ### CHANGE
 
 - New config options require in-place config file updates, ideally without user interaciton.
-- Split source into multiple files
+- Split source into multiple files within a module
 
 [1.1] 2020-04-08
 ----------------
