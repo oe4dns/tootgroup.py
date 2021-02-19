@@ -1,14 +1,15 @@
 import setuptools
+import tootgroup_tools
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="tootgroup.py",
-    version="1.1.0",
+    version=tootgroup_tools.version.CURRENT,
     author="Andreas Schreiner",
     author_email="andreas.schreiner@sonnenmulde.at",
-    description="Emulate group accounts on Mastodon",
+    description="Emulate group accounts on Mastodon and more",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/oe4dns/tootgroup.py",

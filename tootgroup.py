@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-
 ## tootgroup.py
-## Version 1.1
 ##
 ##
 ## Andreas Schreiner
@@ -16,7 +14,9 @@
 ## See attached LICENSE file.
 ##
 
-import argparse
+import tootgroup_tools
+TOOTGROUP_VERSION = tootgroup_tools.version.CURRENT
+
 import configparser
 import html
 import os
@@ -33,7 +33,7 @@ import mastodon
 def main():
 
     # Read commandline arguments and flags from input
-    my_commandline_arguments = parse_arguments()
+    my_commandline_arguments = tootgroup_tools.commandline_arguments.parse_arguments()
 
     # Get the configuration storage loocation
     my_config_dir, my_config_file = setup_configuration_path("tootgroup.py",
@@ -81,7 +81,7 @@ def main():
         print("########################################################\n")
         sys.exit(0)
 
-    # TODO: Version 1.2 Check if account IDs are unique across all mastodon
+    # TODO: Check if account IDs are unique across all mastodon
     # servers Get group member IDs. They could not be fetched directly while
     # connecting to the Mastodon server.
     for member in masto.account_following(my_account["id"]):
@@ -335,60 +335,6 @@ def new_credentials_from_mastodon(group_name, config_dir, config):
             else:
                 print("tootgroup.py will exit now. Run it again to try once more!\n")
                 sys.exit(0)
-
-
-
-def parse_arguments():
-    """Read arguments from the command line.
-    
-    parse_arguments() uses Python's agparser to read arguments from the command
-    line. It also sets defaults and provides help and hints abouth which
-    arguments are available
-    
-    Availble arguments:
-    -h, --help: Automatically generated, prints options for help
-
-    -c, --catch-up: Catch up to the current state of the timeline without
-    tooting anything. This is useful if the script has not been running for
-    a while and would otherwise (re)post lots of old group-toots.
-
-    -d, --dry-run: Parse new messages but do not upload or toot anything.
-    Shows the ID of notifications it would have processed instead.
-
-    -g, --group: group handle the script is currently running for. Needed
-    by configparser to find its configuration and can be chosen freely.
-
-    -k, --ketchup: Same as -c or --catch-up, for the sake of lol."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--catch-up", action="store_true",
-        help="Catch up to the current state of the timeline without tooting " +
-        "anything. This is useful if the script has not been running for a " +
-        "while and would otherwise (re)post lots of old group-toots.")
-    parser.add_argument("-d", "--dry-run", action="store_true",
-        help="Parse new messages but do not upload or toot anything. " +
-        "Shows the ID of notifications it would have processed instead.")
-    parser.add_argument("-g", "--group",  default="default", 
-        help="Input a handle for the Mastodon account. tootgroup.py stores all " +
-        "information connected to a specific group account under this name. " +
-        "By choosing different handles it is possible to manage multiple " +
-        "Mastodon groups from the same skript. This can be chosen freely but " +
-        " it is wise to use a name that is related to the Mastodon account " +
-        " it will be used with. If no handle is given, " +
-        "\"%(default)s\" is always used instead.")
-    parser.add_argument("-k", "--ketchup", action="store_true",
-        help="Same as -c or --catch-up for the sake of lol!")
-    args = parser.parse_args()    
-    arguments = {}
-    arguments["group_name"] = args.group
-    arguments["catch_up"] = False
-    arguments["dry_run"] = False
-    if args.catch_up or args.ketchup:
-        arguments["catch_up"] = True
-    if args.dry_run:
-        arguments["dry_run"] = True
-
-    return arguments
-
 
 
 def parse_configuration(config_dir, config_file,  group_name):
