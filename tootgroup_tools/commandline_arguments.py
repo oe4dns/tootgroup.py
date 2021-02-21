@@ -20,7 +20,9 @@ def parse_arguments():
     -g, --group: group handle the script is currently running for. Needed
     by configparser to find its configuration and can be chosen freely.
 
-    -k, --ketchup: Same as -c or --catch-up, for the sake of lol."""
+    -k, --ketchup: Same as -c or --catch-up, for the sake of lol.
+
+    --version: Show tootgroup.py version and exit"""
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--catch-up", action="store_true",
         help="Catch up to the current state of the timeline without tooting " +
@@ -39,14 +41,19 @@ def parse_arguments():
         "\"%(default)s\" is always used instead.")
     parser.add_argument("-k", "--ketchup", action="store_true",
         help="Same as -c or --catch-up for the sake of lol!")
+    parser.add_argument("--version", action="store_true",
+        help="Show tootgroup.py version and exit.")
     args = parser.parse_args()    
     arguments = {}
     arguments["group_name"] = args.group
     arguments["catch_up"] = False
     arguments["dry_run"] = False
+    arguments["show_version"] = False
     if args.catch_up or args.ketchup:
         arguments["catch_up"] = True
     if args.dry_run:
         arguments["dry_run"] = True
+    if args.version:
+        arguments["show_version"] = True
 
     return arguments

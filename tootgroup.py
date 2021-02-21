@@ -35,6 +35,11 @@ def main():
     # Read commandline arguments and flags from input
     my_commandline_arguments = tootgroup_tools.commandline_arguments.parse_arguments()
 
+    # if the "--version" argument has been given, show version and exit.
+    if my_commandline_arguments["show_version"]:
+        tootgroup_tools.version.print_version()
+        sys.exit(0)
+
     # Get the configuration storage loocation
     my_config_dir, my_config_file = setup_configuration_path("tootgroup.py",
         "tootgroup.conf") 
