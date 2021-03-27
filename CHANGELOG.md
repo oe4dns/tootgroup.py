@@ -13,7 +13,7 @@ Change Log
 
 ### ADD
 
-- Unlisted Mode: Toots only visible for followers but not in local instance timeline (choose at initial setup)
+- Unlisted Mode: Toots only visible for followers but not in puglic timeline (choose at initial setup)
 
 ### CHANGE
 

@@ -41,12 +41,14 @@ def main():
         sys.exit(0)
 
     # Get the configuration storage loocation
-    my_config_dir, my_config_file = setup_configuration_path("tootgroup.py",
-        "tootgroup.conf") 
-    write_new_config = False
+    config_store = tootgroup_tools.configuration_management.setup_configuration_store() 
 
     # Get the Mastodon account handle the script is running for.
-    my_group_name = my_commandline_arguments["group_name"]
+    config_store['group_name'] = my_commandline_arguments["group_name"]
+
+    print('DEVEL: STOP HERE with sys.exit(0)')
+    #print(config_store)
+    sys.exit(0)
 
     # Get and validate configuration from the config file.
     my_config = parse_configuration(my_config_dir, my_config_file, my_group_name)
@@ -342,7 +344,7 @@ def new_credentials_from_mastodon(group_name, config_dir, config):
                 sys.exit(0)
 
 
-def parse_configuration(config_dir, config_file,  group_name):
+def parse_configuration(config_dir, config_file, group_name):
     """Read configuration from file, handle first-run situations and errors.
     
     "config_dir" the OS specific path to the configuration directory 
@@ -373,7 +375,7 @@ def parse_configuration(config_dir, config_file,  group_name):
     
     # Do we have a mastodon instance URL? If not, we have to
     # ask for it and register with our group's server first.
-    if not config.has_option(group_name,  "mastodon_instance"):
+    if not config.has_option(group_name, "mastodon_instance"):
         config[group_name]["mastodon_instance"] = ""
         print("We need a Mastodon server to connect to!")
     if config[group_name]["mastodon_instance"] == "":
@@ -385,7 +387,7 @@ def parse_configuration(config_dir, config_file,  group_name):
     
     # Where can the client ID be found and does the file exist?
     # If not, re-register the client.
-    if not config.has_option(group_name,  "client_id"):
+    if not config.has_option(group_name, "client_id"):
         config[group_name]["client_id"] = ""
     if config[group_name]["client_id"] == "":
         config[group_name]["client_id"] = group_name + "_clientcred.secret"
@@ -429,11 +431,11 @@ def parse_configuration(config_dir, config_file,  group_name):
         config[group_name]["dm_visibility"] = input(
                 "\nWhat visibility should the toots created from DMs " +
                 "have? Unlisted is recommended for testing, public for " +
-                "regular use.\n[private/unlisted/public]: ").lower()
+                "regular use.\n[private|unlisted|public]: ").lower()
         write_new_config = True
     
     # Should tootgroup.py accept public mentions for retooting?
-    if not config.has_option(group_name,  "accept_retoots"):
+    if not config.has_option(group_name, "accept_retoots"):
         config[group_name]["accept_retoots"] = ""
     if ((config[group_name]["accept_retoots"] == "") or
             (config[group_name]["accept_retoots"] not in ("yes",  "no"))):
@@ -453,7 +455,7 @@ def parse_configuration(config_dir, config_file,  group_name):
     # notifications and will be persisted here. It is initially set up with
     # "catch-up" to indicate this situation.
     # Tootgroup.py will then get sane values and continue.
-    if ((not config.has_option(group_name,  "last_seen_id")) or
+    if ((not config.has_option(group_name, "last_seen_id")) or
             (config[group_name]["last_seen_id"] == "")):
         config[group_name]["last_seen_id"] = "catch-up"
         write_new_config = True    
@@ -473,62 +475,7 @@ def parse_configuration(config_dir, config_file,  group_name):
     return(config)
 
 
-def setup_configuration_path(application_name, config_filename):
-    """Search for the configuration file location. Start with the
-    skript's home directory and try the OS specific user configuration
-    directory next. Local takes precedence but if no configuration
-    is found, the new one will be created in the OS specific user
-    config path if possible. If that fails, the local directory will
-    again be used as a last resort. This is to ensure
-    backwards-compatibility and to enable local overrides for
-    development/testing.
-    
-    "application_name" used to determine the operating system
-    specific config storage path.
-
-    "config_filename" name of the configuration file
-
-    Returns a tuple containing the path to the configuration dir
-    and the name of the config file"""
-    local_path = os.path.dirname(os.path.realpath(__file__)) + "/"
-    os_user_config_path = appdirs.AppDirs(application_name).user_data_dir + "/"
-    config_dir = local_path
-
-    # Is there a config file in the tootgroup.py directory?
-    if os.path.isfile(local_path + config_filename):
-        print("Found local configuration and using it...")
-
-    # Is there a config file in the system's user config directory?
-    elif os.path.isfile(os_user_config_path + config_filename):
-        config_dir = os_user_config_path
-        # This is the default, do not output anything
-    
-    # Did not find any config file, default to user config dir!
-    else:
-        config_dir = os_user_config_path
-        # Create config dir if it does not exist yet
-        try:
-            os.makedirs(config_dir, exist_ok=True)
-            print("No configuration found!")
-            print("tootgroup.py will continue to run but first " +
-            "ask for all information it requires...\n" +
-            "Configuration will then be stored under " +
-            config_dir + "\n")
-        except Exception:
-            # Cannot create config directory, have to use the
-            # tootgroup.py dir instead 
-            config_dir = local_path
-            print("No configuration found!")
-            print("tootgroup.py will continue to run but first " +
-            "ask for all information it requires...\n" +
-            "Configuration will then be stored under " +
-            config_dir + "\n")
-
-    return(config_dir, config_filename)
-
-
-
-def write_configuration(config_dir, config_file,  config):
+def write_configuration(config_dir, config_file, config):
     """Write out the configuration into the config file.
     
     "config_dir" the path to the configuration directory 
