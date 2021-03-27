@@ -17,26 +17,23 @@
 import tootgroup_tools
 TOOTGROUP_VERSION = tootgroup_tools.version.CURRENT
 
-import configparser
 import html
+import mastodon
 import os
 import re
 import requests
 import sys
 import tempfile
 
-import appdirs
-import mastodon
-
 
 # Execution starts here.
 def main():
 
     # Read commandline arguments and flags from input
-    my_commandline_arguments = tootgroup_tools.commandline_arguments.parse_arguments()
+    commandline_arguments = tootgroup_tools.commandline_arguments.parse_arguments()
 
     # if the "--version" argument has been given, show version and exit.
-    if my_commandline_arguments["show_version"]:
+    if commandline_arguments["show_version"]:
         tootgroup_tools.version.print_version()
         sys.exit(0)
 
@@ -44,26 +41,23 @@ def main():
     config_store = tootgroup_tools.configuration_management.setup_configuration_store() 
 
     # Get the Mastodon account handle the script is running for.
-    config_store['group_name'] = my_commandline_arguments["group_name"]
-
-    print('DEVEL: STOP HERE with sys.exit(0)')
-    #print(config_store)
-    sys.exit(0)
+    config_store["group_name"] = commandline_arguments["group_name"]
+    group_name = config_store["group_name"]
 
     # Get and validate configuration from the config file.
-    my_config = parse_configuration(my_config_dir, my_config_file, my_group_name)
+    my_config = tootgroup_tools.configuration_management.parse_configuration(config_store)
 
     # If the "catch-up" commandline argument has been given, reset the last seen
     # ID so that tootgroup.py only updates its according config value without
     # retooting anything.
-    if my_commandline_arguments["catch_up"]:
-        my_config[my_group_name]["last_seen_id"] = "catch-up" 
+    if commandline_arguments["catch_up"]:
+        my_config[group_name]["last_seen_id"] = "catch-up" 
     
     # Create Mastodon API instance.
     masto = mastodon.Mastodon(
-        client_id = my_config_dir + my_config[my_group_name]["client_id"],
-        access_token = my_config_dir + my_config[my_group_name]["access_token"],
-        api_base_url = my_config[my_group_name]["mastodon_instance"]
+        client_id = config_store["directory"] + my_config[group_name]["client_id"],
+        access_token = config_store["directory"] + my_config[group_name]["access_token"],
+        api_base_url = my_config[group_name]["mastodon_instance"]
     )
     
     try:
@@ -96,9 +90,9 @@ def main():
     
     # Do we accept direct messages, public retoots, both or none? This
     # can be set in the configuration.
-    accept_DMs = my_config[my_group_name].getboolean("accept_DMs")
-    accept_retoots = my_config[my_group_name].getboolean("accept_retoots")
-    dm_visibility = my_config[my_group_name]["dm_visibility"]
+    accept_DMs = my_config[group_name].getboolean("accept_DMs")
+    accept_retoots = my_config[group_name].getboolean("accept_retoots")
+    dm_visibility = my_config[group_name]["dm_visibility"]
     
     # Get all new notifications up to a maximum number set here.
     # Defaults to 100 and has to be changed in the code if really desired.
@@ -130,15 +124,15 @@ def main():
 
         # Initialize "last_seen_id" on first run. Notifications are ignored up
         # to this point, but newer ones will be considered subsequently.
-        if my_config[my_group_name]["last_seen_id"] == "catch-up":
-            my_config[my_group_name]["last_seen_id"] = str(latest_notification_id)
-            write_new_config = True
+        if my_config[group_name]["last_seen_id"] == "catch-up":
+            my_config[group_name]["last_seen_id"] = str(latest_notification_id)
+            config_store["write_NEW"] = True
             print("Caught up to current timeline. Run again to start group-tooting.")
         
         for notification in get_notifications:
             max_notification_id = notification.id
             
-            if (notification.id > int(my_config[my_group_name]["last_seen_id"]) and
+            if (notification.id > int(my_config[group_name]["last_seen_id"]) and
                     notification_count < max_notifications):
                 my_notifications.append(notification)
             else:
@@ -149,9 +143,9 @@ def main():
     
     # If there have been new notifications since the last run, update "last_seen_id"
     # and write config file to persist the new value.
-    if latest_notification_id > int(my_config[my_group_name]["last_seen_id"]):
-        my_config[my_group_name]["last_seen_id"] = str(latest_notification_id)
-        write_new_config = True
+    if latest_notification_id > int(my_config[group_name]["last_seen_id"]):
+        my_config[group_name]["last_seen_id"] = str(latest_notification_id)
+        config_store["write_NEW"] = True
     
     # Reverse list of notifications so that the oldest are processed first
     my_notifications = my_notifications[::-1]
@@ -170,7 +164,7 @@ def main():
                     repost_trigger = "!@" + my_account["username"]
                     status = re.sub("<.*?>", "", notification.status.content)
                     if repost_trigger in status:
-                        if not my_commandline_arguments["dry_run"]:
+                        if not commandline_arguments["dry_run"]:
                             masto.status_reblog(notification.status.id)
                             print("Retooted from notification ID: " + str(notification.id))
                         else:
@@ -194,7 +188,7 @@ def main():
                         new_status = re.sub(account_username, "", new_status)
                         # "un-escape" HTML special characters
                         new_status = html.unescape(new_status)
-                        if not my_commandline_arguments["dry_run"]:
+                        if not commandline_arguments["dry_run"]:
                             # Repost as a new status
                             masto.status_post(
                                 new_status,
@@ -212,7 +206,7 @@ def main():
                     # If the DM does not start with the group account's @username it will not
                     # trigger a new toot. Notify the originating user why this happened instead!
                     else:
-                        if not my_commandline_arguments["dry_run"]:
+                        if not commandline_arguments["dry_run"]:
                             new_status = ("@" + notification.account.acct + "\n"
                             "Ohai! - This is a notification from your friendly tootgroup.py bot.\n\n"
                             "Your message has not been converted to a new group toot because it did "
@@ -233,12 +227,11 @@ def main():
     
     # There have been changes requiring to persist the new configuration
     # but not in a dry-run condition
-    if write_new_config and not my_commandline_arguments["dry_run"]:
-        write_configuration(my_config_dir, my_config_file, my_config)
+    if config_store["write_NEW"] and not commandline_arguments["dry_run"]:
+        tootgroup_tools.configuration_management.write_configuration(config_store, my_config)
     
     print("Successful tootgroup.py run for " + "@" + my_account["username"] +
-        " at " + my_config[my_group_name]["mastodon_instance"])
-
+        " at " + my_config[group_name]["mastodon_instance"])
 
 
 def media_toot_again(orig_media_dict, mastodon_instance):
@@ -284,220 +277,6 @@ def media_toot_again(orig_media_dict, mastodon_instance):
             except Exception:
                 pass # cannot delete, probably non-existant anyway! 
     return(new_media_dict)
-
-
-
-def new_credentials_from_mastodon(group_name, config_dir, config):
-    """Register tootgroup.py at a Mastodon server and get user credentials.
-    
-    "group_name" points to the current groups settings in the config file
-
-    "config_dir" directory where the config and credentials are stored
-
-    "config" the configuration as read in from configparser
-    
-    This will be run if tootgroup.py is started for the first time, if its
-    configuration files have been deleted or if some elements of the
-    configuration are missing.
-    """
-    # Register tootgroup.py app at the Mastodon server
-    try:
-        mastodon.Mastodon.create_app(
-            "tootgroup.py",
-            api_base_url = config[group_name]["mastodon_instance"],
-            to_file = config_dir + config[group_name]["client_id"]
-        )
-        # Create Mastodon API instance
-        masto = mastodon.Mastodon(
-            client_id = config_dir + config[group_name]["client_id"],
-            api_base_url = config[group_name]["mastodon_instance"]
-        )
-    except Exception as e:
-        print("")
-        print("\n##################################################################")
-        print("The Mastodon instance URL is wrong or the server does not respond.")
-        print("See the error message for more details:")
-        print(e)
-        print("")
-        print("tootgroup.py will exit now. Run it again to try once more!")
-        print("##################################################################\n")
-        sys.exit(0)
- 
-    # Log in once with username and password to get an access token for future logins.
-    # Ask until login succeeds or at most 3 times before the skript gives up.
-    i = 0
-    while i < 3:
-        i+=1
-        try:
-            masto.log_in(
-                input("Username (e-Mail) to log into Mastodon Instance: "),
-                input("Password: "),
-                to_file = config_dir + config[group_name]["access_token"]
-            )
-            break
-        except Exception:
-            print("\nUsername and/or Password did not match!")
-            if i <3:
-                print("Please enter them again.\n")
-            else:
-                print("tootgroup.py will exit now. Run it again to try once more!\n")
-                sys.exit(0)
-
-
-def parse_configuration(config_dir, config_file, group_name):
-    """Read configuration from file, handle first-run situations and errors.
-    
-    "config_dir" the OS specific path to the configuration directory 
-
-    "config_file" the name of the configuration file 
-
-    "group_name" determines the section to be read by configparser
-    
-    parse_configuration() uses Python's configparser to read and interpret the
-    config file. It will detect a missing config file or missing elements and
-    then try to solve problems by asking the user for more information. This
-    does also take care of a first run situation where nothing is set up yet and
-    in that way act as an installer!
-    
-    parse_configuration should always return a complete and usable configuration"""
-    config = configparser.ConfigParser()
-    config.read(config_dir + config_file)
-    get_new_credentials = False
-    write_new_config = False
-    
-    # Is there already a section for the current tootgroup.py
-    # group. If not, create it now.
-    if not config.has_section(group_name):
-        config[group_name] = {}
-        print("Group \"" + group_name + "\" not in configuration. " +
-            "- Setting it up now...")
-        write_new_config = True
-    
-    # Do we have a mastodon instance URL? If not, we have to
-    # ask for it and register with our group's server first.
-    if not config.has_option(group_name, "mastodon_instance"):
-        config[group_name]["mastodon_instance"] = ""
-        print("We need a Mastodon server to connect to!")
-    if config[group_name]["mastodon_instance"] == "":
-        config[group_name]["mastodon_instance"] = input("Enter the "
-            "URL of the Mastodon instance your group account is "
-            "running on: ")
-        get_new_credentials = True
-        write_new_config = True
-    
-    # Where can the client ID be found and does the file exist?
-    # If not, re-register the client.
-    if not config.has_option(group_name, "client_id"):
-        config[group_name]["client_id"] = ""
-    if config[group_name]["client_id"] == "":
-        config[group_name]["client_id"] = group_name + "_clientcred.secret"
-        get_new_credentials = True
-        write_new_config = True
-    if not os.path.isfile(config_dir + config[group_name]["client_id"]):
-        get_new_credentials = True
-    
-    # Where can the user access token be found and does the file exist?
-    # If not, re-register the client to get new user credentials
-    if not config.has_option(group_name,  "access_token"):
-        config[group_name]["access_token"] = ""
-    if config[group_name]["access_token"] == "":
-        config[group_name]["access_token"] = group_name + "_usercred.secret"
-        get_new_credentials = True
-        write_new_config = True
-    if not os.path.isfile(config_dir + config[group_name]["access_token"]):
-        get_new_credentials = True
-    
-    # Should tootgroup.py accept direct messages for reposting?
-    if not config.has_option(group_name,  "accept_dms"):
-        config[group_name]["accept_dms"] = ""
-    if ((config[group_name]["accept_dms"] == "") or
-            (config[group_name]["accept_dms"] not in ("yes",  "no"))):
-        str = ""
-        while True:
-            str = input("\nShould tootgroup.py repost direct messages " +
-                        "from group members? [yes/no]: ")
-            if str.lower() not in ("yes",  "no"):
-                print("Please enter 'yes' or 'no'!")
-                continue
-            else:
-                break
-        config[group_name]["accept_dms"] = str.lower()
-        write_new_config = True
-
-    # How public should the toots from direct messages be?
-    while config[group_name].get("dm_visibility") not in {
-            'private', 'unlisted', 'public'}:
-
-        config[group_name]["dm_visibility"] = input(
-                "\nWhat visibility should the toots created from DMs " +
-                "have? Unlisted is recommended for testing, public for " +
-                "regular use.\n[private|unlisted|public]: ").lower()
-        write_new_config = True
-    
-    # Should tootgroup.py accept public mentions for retooting?
-    if not config.has_option(group_name, "accept_retoots"):
-        config[group_name]["accept_retoots"] = ""
-    if ((config[group_name]["accept_retoots"] == "") or
-            (config[group_name]["accept_retoots"] not in ("yes",  "no"))):
-        str = ""
-        while True:
-            str = input("\nShould tootgroup.py retoot public mentions " +
-                        "from group members? [yes/no]: ")
-            if str.lower() not in ("yes",  "no"):
-                print("Please enter 'yes' or 'no'!")
-                continue
-            else:
-                break
-        config[group_name]["accept_retoots"] = str.lower()
-        write_new_config = True
-    
-    # The ID of the last group-toot is needed to check for newly arrived
-    # notifications and will be persisted here. It is initially set up with
-    # "catch-up" to indicate this situation.
-    # Tootgroup.py will then get sane values and continue.
-    if ((not config.has_option(group_name, "last_seen_id")) or
-            (config[group_name]["last_seen_id"] == "")):
-        config[group_name]["last_seen_id"] = "catch-up"
-        write_new_config = True    
-    
-    # Some registration info or credentials were missing - we have to register
-    # tootgroup.py with our Mastodon server instance. (again?)
-    if get_new_credentials:
-        print("Some credentials are missing, need to get new ones...")
-        new_credentials_from_mastodon(group_name, config_dir, config)
-    
-    # Have there been any changes to the configuration?
-    # If yes we have to write them to the config file
-    if write_new_config:
-        write_configuration(config_dir, config_file, config)
-    
-    # Configuration should be complete and working now - return it.
-    return(config)
-
-
-def write_configuration(config_dir, config_file, config):
-    """Write out the configuration into the config file.
-    
-    "config_dir" the path to the configuration directory 
-    
-    "config_file" the name of the configuration file 
-
-    "config" configparser object containing the current configuration.
-    
-    This can be called whenever the configuration needs to be persisted by
-    writing it to the disk."""
-    try:
-        with open(config_dir + config_file, "w") as configfile:
-            config.write(configfile)
-    except Exception as e:
-        print("")
-        print("\n############################################################")
-        print("Cannot write to configuration file:")
-        print(e)
-        print("Try to fix the problem and run toogroup.py again afterwards.")
-        print("############################################################\n")
-        sys.exit(0)
-            
 
 
 # Start executing main() function if the script is called from a command line
