@@ -93,6 +93,7 @@ def parse_configuration(config_store):
         print("Group \"" + group_name + "\" not in configuration. " +
             "- Setting it up now...")
         config_store["write_NEW"] = True
+        config_store["first_run"] = True
     
     # Do we have a mastodon instance URL? If not, we have to
     # ask for it and register with our group's server first.
@@ -127,6 +128,23 @@ def parse_configuration(config_store):
         config_store["write_NEW"] = True
     if not os.path.isfile(config_store["directory"] + config[group_name]["access_token"]):
         get_new_credentials = True
+
+    # Should tootgroup.py accept public mentions for retooting?
+    if not config.has_option(group_name, "accept_retoots"):
+        config[group_name]["accept_retoots"] = ""
+    if ((config[group_name]["accept_retoots"] == "") or
+            (config[group_name]["accept_retoots"] not in ("yes",  "no"))):
+        str = ""
+        while True:
+            str = input("\nShould tootgroup.py RETOOT public mentions " +
+                        "from group members? [ yes | no ]: ")
+            if str.lower() not in ("yes",  "no"):
+                print("Please enter 'yes' or 'no'!")
+                continue
+            else:
+                break
+        config[group_name]["accept_retoots"] = str.lower()
+        config_store["write_NEW"] = True
     
     # Should tootgroup.py accept direct messages for reposting?
     if not config.has_option(group_name,  "accept_dms"):
@@ -135,8 +153,8 @@ def parse_configuration(config_store):
             (config[group_name]["accept_dms"] not in ("yes",  "no"))):
         str = ""
         while True:
-            str = input("\nShould tootgroup.py repost direct messages " +
-                        "from group members? [yes/no]: ")
+            str = input("\nShould tootgroup.py REPOST direct messages " +
+                        "from group members? [ yes | no ]: ")
             if str.lower() not in ("yes",  "no"):
                 print("Please enter 'yes' or 'no'!")
                 continue
@@ -148,28 +166,19 @@ def parse_configuration(config_store):
     # How public should the toots from direct messages be?
     while config[group_name].get("dm_visibility") not in {
             'private', 'unlisted', 'public'}:
+        
+        if not config_store["first_run"]:
+            print("")
+            print("### Automatic configuration update! ###")
+            print("Visibility of REPOSTS will be set to 'public' as this is standard behaviour.")
+            print("")
+            config[group_name]["dm_visibility"] = "public"
+        else:
+            config[group_name]["dm_visibility"] = input(
+                    "\nWhat visibility should the toots created from DMs " +
+                    "have? Unlisted is recommended for testing, public for " +
+                    "regular use.\n[ private | unlisted | public ]: ").lower()
 
-        config[group_name]["dm_visibility"] = input(
-                "\nWhat visibility should the toots created from DMs " +
-                "have? Unlisted is recommended for testing, public for " +
-                "regular use.\n[private|unlisted|public]: ").lower()
-        config_store["write_NEW"] = True
-    
-    # Should tootgroup.py accept public mentions for retooting?
-    if not config.has_option(group_name, "accept_retoots"):
-        config[group_name]["accept_retoots"] = ""
-    if ((config[group_name]["accept_retoots"] == "") or
-            (config[group_name]["accept_retoots"] not in ("yes",  "no"))):
-        str = ""
-        while True:
-            str = input("\nShould tootgroup.py retoot public mentions " +
-                        "from group members? [yes/no]: ")
-            if str.lower() not in ("yes",  "no"):
-                print("Please enter 'yes' or 'no'!")
-                continue
-            else:
-                break
-        config[group_name]["accept_retoots"] = str.lower()
         config_store["write_NEW"] = True
     
     # The ID of the last group-toot is needed to check for newly arrived
@@ -213,7 +222,8 @@ def setup_configuration_store():
     config_store = {"filename": "",
                     "directory": "",
                     "group_name": "",
-                    "write_NEW" : True }
+                    "first_run": False,
+                    "write_NEW" : False }
 
     # Get name and path of the running application. It is used to
     # determine its configuration storage path
@@ -236,18 +246,18 @@ def setup_configuration_store():
 
     # Is there a config file in the tootgroup.py directory?
     if os.path.isfile(local_path + config_filename):
-        config_store["write_NEW"] = False
         print("Found local configuration and using it...")
 
     # Is there a config file in the system's user config directory?
     elif os.path.isfile(os_user_config_path + config_filename):
         config_store["directory"] = os_user_config_path
-        config_store["write_NEW"] = False
         # This is the default, do not output anything
     
     # Did not find any config file, default to user config dir!
     else:
         config_store["directory"] = os_user_config_path
+        config_store["write_NEW"] = True
+        config_store["first_run"] = True
         # Create config dir if it does not exist yet
         try:
             os.makedirs(config_store["directory"], exist_ok=True)
@@ -278,7 +288,6 @@ def write_configuration(config_store, config):
     
     This can be called whenever the configuration needs to be persisted by
     writing it to the disk."""
-    print(config_store["directory"])
     try:
         with open(config_store["directory"] + config_store["filename"], "w") as configfile:
             config.write(configfile)
