@@ -130,49 +130,32 @@ def parse_configuration(config_store):
         get_new_credentials = True
 
     # Should tootgroup.py accept public mentions for retooting?
-    if not config.has_option(group_name, "accept_retoots"):
-        config[group_name]["accept_retoots"] = ""
-    if ((config[group_name]["accept_retoots"] == "") or
-            (config[group_name]["accept_retoots"] not in ("yes",  "no"))):
-        str = ""
-        while True:
-            str = input("\nShould tootgroup.py RETOOT public mentions " +
-                        "from group members? [ yes | no ]: ")
-            if str.lower() not in ("yes",  "no"):
-                print("Please enter 'yes' or 'no'!")
-                continue
-            else:
-                break
-        config[group_name]["accept_retoots"] = str.lower()
+    while config[group_name].get("accept_retoots") not in ("yes", "no"):
+        config[group_name]["accept_retoots"] = input(
+            "\nShould tootgroup.py RETOOT public mentions " +
+            "from group members? [ yes | no ]: ").lower()
         config_store["write_NEW"] = True
     
     # Should tootgroup.py accept direct messages for reposting?
-    if not config.has_option(group_name,  "accept_dms"):
-        config[group_name]["accept_dms"] = ""
-    if ((config[group_name]["accept_dms"] == "") or
-            (config[group_name]["accept_dms"] not in ("yes",  "no"))):
-        str = ""
-        while True:
-            str = input("\nShould tootgroup.py REPOST direct messages " +
-                        "from group members? [ yes | no ]: ")
-            if str.lower() not in ("yes",  "no"):
-                print("Please enter 'yes' or 'no'!")
-                continue
-            else:
-                break
-        config[group_name]["accept_dms"] = str.lower()
+    while config[group_name].get("accept_dms") not in ("yes", "no"):
+        config[group_name]["accept_dms"] = input(
+            "\nShould tootgroup.py REPOST direct messages from group " +
+            "members? [ yes | no ]: ").lower()
         config_store["write_NEW"] = True
 
     # How public should the toots from direct messages be?
-    while config[group_name].get("dm_visibility") not in {
-            'private', 'unlisted', 'public'}:
+    while config[group_name].get("dm_visibility") not in (
+            "private", "unlisted", "public"):
         
+        # This option was added in tootgroup.py v1.2 - auto-upgrade
+        # existing installations as to not require manual intervention
         if not config_store["first_run"]:
             print("")
             print("### Automatic configuration update! ###")
             print("Visibility of REPOSTS will be set to 'public' as this is standard behaviour.")
             print("")
             config[group_name]["dm_visibility"] = "public"
+
         else:
             config[group_name]["dm_visibility"] = input(
                     "\nWhat visibility should the toots created from DMs " +

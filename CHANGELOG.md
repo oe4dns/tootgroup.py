@@ -8,17 +8,17 @@ Change Log
 
 - Additional script and/or functionality besides tootgroup.py that enables one or more accounts to be notified of all mentions and DMs directed to a specific (group)account.
 
-[1.2] Unreleased/TODO
+[1.2] 2021-03-28
 ---------------------
 
-### ADD
+### ADDED
 
-- Unlisted Mode: Toots only visible for followers but not in puglic timeline (choose at initial setup)
+- Configurable toot visibility: private, unlisted or public. Can be selected at initial setup. Existing installs will remain unchanged (public)
 
-### CHANGE
+### CHANGED
 
-- New config options require in-place config file updates, ideally without user interaciton.
-- Split source into multiple files within a module
+- In-place config update without user interaciton possible for existing setups.
+- Move parts of the source to a separate tootgroup_tools module
 
 [1.1] 2020-04-08
 ----------------
