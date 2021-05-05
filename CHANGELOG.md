@@ -8,6 +8,19 @@ Change Log
 
 - Additional script and/or functionality besides tootgroup.py that enables one or more accounts to be notified of all mentions and DMs directed to a specific (group)account.
 
+[1.2.1] Unreleased/TODO
+---------------------
+
+### ADD
+
+- Test existing Pleroma compatiblity
+- Research Friendica compatibility options - add here or at v1.3
+
+### FIX
+
+- [
+[Pleroma] Not all groups members are returning from masto.account_following function call](https://github.com/oe4dns/tootgroup.py/issues/7)
+
 [1.2] 2021-03-28
 ---------------------
 

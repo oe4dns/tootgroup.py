@@ -85,7 +85,10 @@ def main():
     # TODO: Check if account IDs are unique across all mastodon
     # servers Get group member IDs. They could not be fetched directly while
     # connecting to the Mastodon server.
-    for member in masto.account_following(my_account["id"]):
+    #
+    # limit=sys.maxsize is set here because Pleroma only returns 20 Member if
+    # the standard limit=None value is used!
+    for member in masto.account_following(my_account["id"], limit=sys.maxsize):
         my_account["group_member_ids"].append(member.id)
     
     # Do we accept direct messages, public retoots, both or none? This
