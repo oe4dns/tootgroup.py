@@ -1,4 +1,4 @@
-`tootgroup.py` - emulate group accounts on Mastodon
+`tootgroup.py` - emulate group accounts on Mastodon and Pleroma
 =================================================
 
 What is this?
@@ -6,16 +6,16 @@ What is this?
 
 Some social media platforms allow groups of users to post into a unified "group"
 timeline/instance/whatever you want to call it. This is currently not possible
-on Mastodon without giving all members full login credentials to a group.
-`tootgroup.py` is an attempt to solve this specific use case.
+on Mastodon or Pleroma without giving all members full login credentials to a
+group. `tootgroup.py` is an attempt to solve this specific use case.
 
 How does it work?
 -----------------
 
 `tootgroup.py` has to be set up on a computer and run periodically. It reads the
-notifications from the Mastodon account it is connected to and filters them for
-messages to repost. There are two methods of creating a group post. One or both
-of them can be enabled during the setup procedure.
+notifications from the Mastodon/Pleroma account it is connected to and filters
+them for messages to repost. There are two methods of creating a group post. One
+or both of them can be enabled during the setup procedure.
 
 1. Public mentions of group members are boosted if they preceed the group's
    name with an Exclamation Mark like "!@mastodon"
@@ -60,16 +60,16 @@ when you run it from the commandline for the first time. Being somewhat
 comfortable with Python scripting and the commandline in general might help
 if difficulties should appear.
 
-1. You need an account on any Mastodon instance/server that will act as your
-   group account. Think about if you should mark it as a "Bot".
+1. You need an account on any Mastodon or Pleroma instance that will act as
+   your group account. Think about if you should mark it as a "Bot".
 
 2. Run `tootgroup.py` from the command line.
 
 3. `tootgroup.py` will ask you for all needed setup data and try to get them
-   right by connecting to the Mastodon server. If it cannot do so, it will
-   tell you and you can retry. When successful, `tootgroup.py` will write the
-   configuration to its tootgroup.conf file and read it from there next time
-   you run the script.
+   right by connecting to the Mastodon/Pleroma server. If it cannot do so, it
+   will tell you and you can retry. When successful, `tootgroup.py` will write
+   the configuration to its tootgroup.conf file and read it from there next
+   time you run the script.
 
    The place for storing configuration is operating system dependent but will be
    shown during the first-run/setup phase. A local tootgroup.conf file placed
