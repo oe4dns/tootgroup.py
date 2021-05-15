@@ -37,7 +37,7 @@ def main():
         tootgroup_tools.version.print_version()
         sys.exit(0)
 
-    # Get the configuration storage loocation
+    # Get the configuration storage location
     config_store = tootgroup_tools.configuration_management.setup_configuration_store() 
 
     # Get the Mastodon account handle the script is running for.
@@ -82,8 +82,7 @@ def main():
         print("########################################################\n")
         sys.exit(0)
 
-    # TODO: Check if account IDs are unique across all mastodon
-    # servers Get group member IDs. They could not be fetched directly while
+    # Get group member IDs. They can not be fetched directly when
     # connecting to the Mastodon server.
     #
     # limit=sys.maxsize is set here because Pleroma only returns 20 Member if
@@ -155,7 +154,7 @@ def main():
 
     # run through the notifications and look for retoot candidates
     for notification in my_notifications:
-        
+
         # Only from group members
         if notification.account.id in my_account["group_member_ids"]:
         

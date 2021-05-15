@@ -8,8 +8,9 @@ import os
 import sys
 
 
-def new_credentials_from_mastodon(config_store, config):
-    """Register tootgroup.py at a Mastodon server and get user credentials.
+def new_credentials_from_server(config_store, config):
+    """Register tootgroup.py at a Mastodon (or Pleroma) server and get
+    user credentials.
     
     "config_store" dictionary containting config file name and path as
     well as the current group's name
@@ -20,10 +21,9 @@ def new_credentials_from_mastodon(config_store, config):
     configuration files have been deleted or if some elements of the
     configuration are missing.
     """
-    # Register tootgroup.py app at the Mastodon server
-
     group_name = config_store["group_name"]
     
+    # Register tootgroup.py app at the Mastodon server
     try:
         mastodon.Mastodon.create_app(
             "tootgroup.py",
@@ -177,7 +177,7 @@ def parse_configuration(config_store):
     # tootgroup.py with our Mastodon server instance. (again?)
     if get_new_credentials:
         print("Some credentials are missing, need to get new ones...")
-        new_credentials_from_mastodon(config_store, config)
+        new_credentials_from_server(config_store, config)
     
     # Have there been any changes to the configuration?
     # If yes we have to write them to the config file
