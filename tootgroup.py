@@ -40,7 +40,7 @@ def main():
     # Get the configuration storage location
     config_store = tootgroup_tools.configuration_management.setup_configuration_store() 
 
-    # Get the Mastodon account handle the script is running for.
+    # Get the Mastodon/Pleroma account handle the script is running for.
     config_store["group_name"] = commandline_arguments["group_name"]
     group_name = config_store["group_name"]
 
@@ -62,7 +62,7 @@ def main():
     
     try:
         # Get the group account information.
-        # This connects to the Mastodon server for the first time at
+        # This connects to the Mastodon or Pleroma server for the first time at
         # every tootgroup.py's run.
         my_account = {
             "username": masto.account_verify_credentials().username, 
@@ -72,9 +72,9 @@ def main():
     except Exception as e:
         print("")
         print("\n########################################################")
-        print("tootgroup.py could not connect to the Mastodon server.")
-        print("If you know that it is running, there might be a")
-        print("problem with our local configuration. Check the error")
+        print("tootgroup.py could not connect to the Mastodon or Pleroma")
+        print("instance. If you know that it is running, there might be a")
+        print("problem with your local configuration. Check the error")
         print("message for more details:")
         print(e)
         print("\nYou can always try to delete tootgroup.py's config file")
@@ -107,8 +107,8 @@ def main():
     get_more_notifications = True
     
     # Get notifications. Stop if either the last known notification ID or
-    # the maximum number is reached. Chunk size is limited to 40 by Mastodon
-    # but could be reduced further by any specific server instance. 
+    # the maximum number is reached. Chunk size is limited to 40 by default
+    # in Mastodon but this can be configured at any specific server instance. 
     while get_more_notifications:
         get_notifications = masto.notifications(max_id = max_notification_id)
         
@@ -237,7 +237,7 @@ def main():
 
 
 def media_toot_again(orig_media_dict, mastodon_instance):
-    """Re-upload media files to Mastodon for use in another toot.
+    """Re-upload media files to the server for use in another toot.
     
     "orig_media_dict" - extracted media files from the original toot
 
@@ -247,7 +247,9 @@ def media_toot_again(orig_media_dict, mastodon_instance):
     Mastodon does not allow the re-use of already uploaded media files (images,
     videos) in a new toot. This function downloads all media files from a toot
     and re-uploads them. It then returns a dict formatted in a proper way to
-    be used by the Mastodon.status_post() function."""
+    be used by the Mastodon.status_post() function.
+    It also works with Pleroma this way altough it has not been tested if there
+    would be another, more "direct" solution with that software."""
     new_media_dict = []
     for media in orig_media_dict:
         media_data = requests.get(media.url).content
@@ -261,7 +263,7 @@ def media_toot_again(orig_media_dict, mastodon_instance):
         try:  
             f_temp.write(media_data)
             f_temp.close() # close to flush data
-            # This re-uploads the current media file to Mastodon!
+            # This re-uploads the current media file to the server!
             new_media_dict.append(mastodon_instance.media_post(
                 f_temp.name, description=media.description))
         except Exception as e:
