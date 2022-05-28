@@ -1,5 +1,5 @@
-## Manages the applications config file storage location, reading
-## and writing.
+"""Manages the applications config file storage location, reading
+and writing."""
 
 import appdirs
 import configparser
@@ -35,12 +35,12 @@ def new_credentials_from_server(config_store, config):
             client_id=config_store["directory"] + config[group_name]["client_id"],
             api_base_url=config[group_name]["mastodon_instance"],
         )
-    except Exception as e:
+    except Exception as ex:
         print("")
         print("\n##################################################################")
         print("The Mastodon instance URL is wrong or the server does not respond.")
         print("See the error message for more details:")
-        print(e)
+        print(ex)
         print("")
         print("tootgroup.py will exit now. Run it again to try once more!")
         print("##################################################################\n")
@@ -298,15 +298,15 @@ def write_configuration(config_store, config):
     writing it to the disk."""
     try:
         with open(
-            config_store["directory"] + config_store["filename"], "w"
+            config_store["directory"] + config_store["filename"], "w", encoding="utf-8"
         ) as configfile:
             config.write(configfile)
 
-    except Exception as e:
+    except Exception as ex:
         print("")
         print("\n############################################################")
         print("Cannot write to configuration file:")
-        print(e)
+        print(ex)
         print("Try to fix the problem and run toogroup.py again afterwards.")
         print("############################################################\n")
         sys.exit(0)

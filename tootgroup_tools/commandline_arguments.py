@@ -1,5 +1,5 @@
-## Uses the argparse module to parse arguments/flags given on
-## the commandline and returns them as a Dictionary.
+"""Uses the argparse module to parse arguments/flags given on
+the commandline and returns them as a Dictionary."""
 
 import argparse
 

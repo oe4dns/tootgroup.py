@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-## tootgroup.py
-##
-##
-## Andreas Schreiner
-## @andis@chaos.social
-## andreas.schreiner@sonnenmulde.at
-##
-## This program is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## any later version.
-##
-## See attached LICENSE file.
-##
+"""tootgroup.py
 
+Andreas Schreiner
+@andis@chaos.social
+andreas.schreiner@sonnenmulde.at
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+See attached LICENSE file.
+"""
 import tootgroup_tools
 
 TOOTGROUP_VERSION = tootgroup_tools.version.CURRENT
@@ -27,8 +25,8 @@ import sys
 import tempfile
 
 
-# Execution starts here.
 def main():
+    """Execution starts here"""
 
     # Read commandline arguments and flags from input
     commandline_arguments = tootgroup_tools.commandline_arguments.parse_arguments()
@@ -72,14 +70,14 @@ def main():
             "id": masto.account_verify_credentials().id,
             "group_member_ids": [],
         }
-    except Exception as e:
+    except Exception as ex:
         print("")
         print("\n########################################################")
         print("tootgroup.py could not connect to the Mastodon or Pleroma")
         print("instance. If you know that it is running, there might be a")
         print("problem with your local configuration. Check the error")
         print("message for more details:")
-        print(e)
+        print(ex)
         print("\nYou can always try to delete tootgroup.py's config file")
         print("and re-run the script for a new setup.")
         print("########################################################\n")
@@ -313,13 +311,13 @@ def media_toot_again(orig_media_dict, mastodon_instance):
             new_media_dict.append(
                 mastodon_instance.media_post(f_temp.name, description=media.description)
             )
-        except Exception as e:
+        except Exception as ex:
             print("")
             print(
                 "\n##################################################################"
             )
             print("Cannot write media to temporary file:")
-            print(e)
+            print(ex)
             print("")
             print("tootgroup.py will continue but media files might not get reposted!")
             print(

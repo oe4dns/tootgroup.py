@@ -1,7 +1,7 @@
 import setuptools
 import tootgroup_tools
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(

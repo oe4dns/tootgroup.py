@@ -32,7 +32,7 @@ Change Log
 
 ### CHANGED
 
-- In-place config update without user interaciton possible for existing setups.
+- In-place config update without user interaction possible for existing setups.
 - Move parts of the source to a separate tootgroup_tools module
 
 [1.1] 2020-04-08
