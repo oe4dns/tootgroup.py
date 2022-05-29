@@ -1,11 +1,12 @@
 """Manages the applications config file storage location, reading
 and writing."""
 
-import appdirs
 import configparser
-import mastodon
 import os
 import sys
+
+import appdirs
+import mastodon
 
 
 def new_credentials_from_server(config_store, config):

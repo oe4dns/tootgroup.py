@@ -12,17 +12,18 @@ any later version.
 
 See attached LICENSE file.
 """
+import html
+import os
+import re
+import sys
+import tempfile
+
+import mastodon
+import requests
+
 import tootgroup_tools
 
 TOOTGROUP_VERSION = tootgroup_tools.version.CURRENT
-
-import html
-import mastodon
-import os
-import re
-import requests
-import sys
-import tempfile
 
 
 def main():
@@ -169,11 +170,13 @@ def main():
                     notification.type == "mention"
                     and notification.status.visibility == "public"
                 ):
-                    # Only if the mention was preceeded by an "!".
-                    # To check this, html tags have to be removed first.
-                    repost_trigger = "!@" + my_account["username"]
+                    # Only if the mention was preceeded by either a "!" or a "*".
+                    # To check for this, html tags have to be removed first.
+                    repost_triggers = []
+                    repost_triggers.append("!@" + my_account["username"])
+                    repost_triggers.append("*@" + my_account["username"])
                     status = re.sub("<.*?>", "", notification.status.content)
-                    if repost_trigger in status:
+                    if any(trigger in status for trigger in repost_triggers):
                         if not commandline_arguments["dry_run"]:
                             masto.status_reblog(notification.status.id)
                             print(
