@@ -1,15 +1,12 @@
 Change Log
 ==========
 
-[1.4] Unreleased/TODO
----------------------
-
-- Additional script and/or functionality besides tootgroup.py that enables one or more accounts to be notified of all mentions and DMs directed to a specific (group)account.
-
-[1.3.1] Unreleased/TODO - ONLY IF FEASIBLE
+[1.3.1] Unreleased/TODO
 -----------------------
 
-- Research Friendica compatibility options for group members, not for hosting the group account.
+### ADDED
+
+- Friendica support for group members but not for hosting the group account itself.
 
 [1.3] 2021-05-16
 ---------------------

@@ -174,7 +174,7 @@ def main():
                     # To check for this, html tags have to be removed first.
                     repost_triggers = []
                     repost_triggers.append("!@" + my_account["username"])
-                    repost_triggers.append("*@" + my_account["username"])
+                    repost_triggers.append("!" + my_account["username"])
                     status = re.sub("<.*?>", "", notification.status.content)
                     if any(trigger in status for trigger in repost_triggers):
                         if not commandline_arguments["dry_run"]:

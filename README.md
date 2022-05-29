@@ -9,6 +9,11 @@ timeline/instance/whatever you want to call it. This is currently not possible
 on Mastodon or Pleroma without giving all members full login credentials to a
 group. `tootgroup.py` is an attempt to solve this specific use case.
 
+tootgroup.py groups can be hosted on Mastodon or Pleroma. But you can still post
+TO the group FROM any ActivityPub service although there might be some
+incompatibilities. Currently Mastodon, Pleroma and Friendica are tested platforms
+for posting TO the group. More tests are welcome!
+
 How does it work?
 -----------------
 
@@ -18,7 +23,8 @@ them for messages to repost. There are two methods of creating a group post. One
 or both of them can be enabled during the setup procedure.
 
 1. Public mentions of group members are boosted if they preceed the group's
-   name with an Exclamation Mark like "!@mastodon"
+   name with an Exclamation Mark like "!@mastodon". For for posts originating
+   from Friendica the correct syntax is "!mastodon".
 
 2. `tootgroup.py` can also look for direct messages from group members. If the
    group is @mentioned at the very beginning, The message will be reposted as
@@ -37,8 +43,14 @@ But how to simply use it?
    "!@group_name" anywhere in the toot.
    EXAMPLE: "OHAI! just found that !@mastodon thingie!"
 
+   Beware if you are posting from Friendica! Friendica handles the Exclamation
+   Mark in a special way because it is also used to address the Friendica
+   Forum functionality. Thus you have to omit the "@" like shown below
+   EXAMPLE (from Friendica): "OHAI! just found that !mastodon thingie!"
+
 2. Write a message that should appear as a new post from the group:
    Put "@group_name" at the very beginning of a direct/private message.
+   (also valid on Friendica)
    EXAMPLE: "@mastodon HERE BE THE MESSAGE TEXT"
 
 How to set up?
