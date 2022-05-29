@@ -94,7 +94,7 @@ def main():
 
     # Do we accept direct messages, public retoots, both or none? This
     # can be set in the configuration.
-    accept_DMs = my_config[group_name].getboolean("accept_DMs")
+    accept_direct_messages = my_config[group_name].getboolean("accept_DMs")
     accept_retoots = my_config[group_name].getboolean("accept_retoots")
     dm_visibility = my_config[group_name]["dm_visibility"]
 
@@ -190,7 +190,7 @@ def main():
 
             # Is reposting of direct messages configured? - if yes then:
             # Look for direct messages
-            if accept_DMs:
+            if accept_direct_messages:
                 if (
                     notification.type == "mention"
                     and notification.status.visibility == "direct"
@@ -210,6 +210,11 @@ def main():
                         new_status = html.unescape(new_status)
                         if not commandline_arguments["dry_run"]:
                             # Repost as a new status
+                            spoiler_text = notification.status.spoiler_text
+                            # DMs from friendica always have a title that is used as spoiler_text.
+                            # Remove it if it does not make sense.
+                            if spoiler_text == "[no subject]":
+                                spoiler_text = ""
                             masto.status_post(
                                 new_status,
                                 media_ids=media_toot_again(
@@ -217,7 +222,7 @@ def main():
                                 ),
                                 sensitive=notification.status.sensitive,
                                 visibility=dm_visibility,
-                                spoiler_text=notification.status.spoiler_text,
+                                spoiler_text=spoiler_text,
                             )
                             print(
                                 "Newly posted from DM with notification ID: "

@@ -50,8 +50,12 @@ But how to simply use it?
 
 2. Write a message that should appear as a new post from the group:
    Put "@group_name" at the very beginning of a direct/private message.
-   (also valid on Friendica)
+   (also valid for Friendica)
    EXAMPLE: "@mastodon HERE BE THE MESSAGE TEXT"
+
+   Again beware if you are posting from Friendica! Leafe the "Title" input
+   field empty. If there is any title set, the resulting post will be hidden
+   behind a content warning!
 
 How to set up?
 --------------

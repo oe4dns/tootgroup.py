@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-[1.3.1] Unreleased/TODO
+[1.4] Unreleased/TODO
 -----------------------
 
 ### ADDED
