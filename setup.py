@@ -1,3 +1,5 @@
+"""For building the Python package"""
+
 import setuptools
 import tootgroup_tools
 

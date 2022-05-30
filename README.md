@@ -9,7 +9,7 @@ timeline/instance/whatever you want to call it. This is currently not possible
 on Mastodon or Pleroma without giving all members full login credentials to a
 group. `tootgroup.py` is an attempt to solve this specific use case.
 
-tootgroup.py groups can be hosted on Mastodon or Pleroma. But you can still post
+tootgroup.py groups can be hosted on Mastodon or Pleroma. But you can post
 TO the group FROM any ActivityPub service although there might be some
 incompatibilities. Currently Mastodon, Pleroma and Friendica are tested platforms
 for posting TO the group. More tests are welcome!
@@ -39,23 +39,40 @@ anything.
 But how to simply use it?
 -------------------------
 
-1. Write a message that should be boosted by the group: Just include
-   "!@group_name" anywhere in the toot.
-   EXAMPLE: "OHAI! just found that !@mastodon thingie!"
+### Mastodon/Pleroma
 
-   Beware if you are posting from Friendica! Friendica handles the Exclamation
-   Mark in a special way because it is also used to address the Friendica
-   Forum functionality. Thus you have to omit the "@" like shown below
-   EXAMPLE (from Friendica): "OHAI! just found that !mastodon thingie!"
+1. Write a message that should be boosted by the group:
+   Just include "!@group_name" anywhere in the toot.
+
+   EXAMPLE: "OHAI! just found that !@mastodon thingie!"
 
 2. Write a message that should appear as a new post from the group:
    Put "@group_name" at the very beginning of a direct/private message.
-   (also valid for Friendica)
+
    EXAMPLE: "@mastodon HERE BE THE MESSAGE TEXT"
 
-   Again beware if you are posting from Friendica! Leafe the "Title" input
-   field empty. If there is any title set, the resulting post will be hidden
-   behind a content warning!
+### Friendica
+
+Because of its history and much more flexible nature, things are a bit different
+and maybe even a bit more complicated when posting from Friendica. Nevertheless
+this is fully supported, tested and in daily use.
+
+1. Write a message that should be boosted by the group:
+   Friendica handles the Exclamation Mark in a special way because it is also
+   used to address the Friendica Forum functionality. Thus you have to omit the
+   "@" like shown below
+
+   EXAMPLE (from Friendica): "OHAI! just found that !mastodon thingie!"
+
+2. Write a message that should appear as a new post from the group:
+   You can send a direct message by limiting the visibility of a "normal" post
+   or by using the personal message menu. The second method does not work with
+   images though, so creating normal posts with limited visibility is preferred.
+   You should always leave the Title/Subject field empty, it might not work as
+   expected otherwise. Put "@group_name" at the very beginning of a
+   direct/private message.
+
+   EXAMPLE: "@mastodon HERE BE THE MESSAGE TEXT"
 
 How to set up?
 --------------

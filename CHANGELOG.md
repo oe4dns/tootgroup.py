@@ -1,15 +1,21 @@
 Change Log
 ==========
 
-[1.4] Unreleased/TODO
------------------------
+[next] tbd
+----------
+
+There is talk that Mastodon might get Group support, so maybe this tool will be obsolete in the not too distant future. We'll see
+about that. tootgroup.py will be supported as long as there is a need for it.
+
+[1.4] 2022-05-31
+----------------
 
 ### ADDED
 
-- Friendica support for group members but not for hosting the group account itself.
+- Group members can now also post from Friendica.
 
 [1.3] 2021-05-16
----------------------
+----------------
 
 ### ADDED
 
@@ -17,11 +23,10 @@ Change Log
 
 ### FIXED
 
-- [
-[Pleroma] Not all groups members are returning from masto.account_following function call](https://github.com/oe4dns/tootgroup.py/issues/7)
+- [Pleroma: Not all groups members are returning from masto.account_following function call](<https://github.com/oe4dns/tootgroup.py/issues/7>)
 
 [1.2] 2021-03-28
----------------------
+----------------
 
 ### ADDED
 
