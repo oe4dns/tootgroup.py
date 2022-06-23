@@ -57,12 +57,14 @@ Because of its history and much more flexible nature, things are a bit different
 and maybe even a bit more complicated when posting from Friendica. Nevertheless
 this is fully supported, tested and in daily use.
 
-1. Write a message that should be boosted by the group:
+1. Write a message that should be reposted by the group:
    Friendica handles the Exclamation Mark in a special way because it is also
-   used to address the Friendica Forum functionality. Thus you have to omit the
-   "@" like shown below
+   used to address the Friendica Forum functionality. Therefore the Asterisk is
+   used instead of the Exclamation Mark. Just include "*@group_name" anywhere in
+   the message. - This would also work in Mastodon/Pleroma, just don't tell them
+   ;-)
 
-   EXAMPLE (from Friendica): "OHAI! just found that !mastodon thingie!"
+   EXAMPLE (from Friendica): "OHAI! just found that *@mastodon thingie!"
 
 2. Write a message that should appear as a new post from the group:
    You can send a direct message by limiting the visibility of a "normal" post

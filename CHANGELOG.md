@@ -7,6 +7,15 @@ Change Log
 There is talk that Mastodon might get Group support, so maybe this tool will be obsolete in the not too distant future. We'll see
 about that. tootgroup.py will be supported as long as there is a need for it.
 
+[1.4.1] 2022-06-23
+----------------
+
+### CHANGED
+
+- Friendica 2022.06 broke compatibility in a sublte way. To make this more robust, a second repost trigger has been added. From now on
+  *@mention ist supported alongside the existing !@mention method. Friendica only supports the new style whereas Mastodon and Pleromoa
+  support both!
+
 [1.4] 2022-05-31
 ----------------
 
