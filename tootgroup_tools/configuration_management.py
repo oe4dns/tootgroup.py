@@ -5,7 +5,7 @@ import configparser
 import os
 import sys
 
-import appdirs
+import platformdirs
 import mastodon
 
 
@@ -244,7 +244,7 @@ def setup_configuration_store():
     config_store["filename"] = config_filename
 
     local_path = application_path
-    os_user_config_path = appdirs.AppDirs(application_name).user_data_dir + "/"
+    os_user_config_path = platformdirs.user_data_dir(application_name) + "/"
     config_store["directory"] = local_path
 
     # Is there a config file in the tootgroup.py directory?
