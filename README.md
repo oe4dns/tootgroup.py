@@ -1,3 +1,5 @@
+
+
 `tootgroup.py` - emulate group accounts on Mastodon and Pleroma
 =================================================
 
@@ -87,7 +89,7 @@ It is also possible to download the script manually from the GitHub repository a
 have to be provided too:
 
 `tootgroup.py` requires <https://github.com/halcy/Mastodon.py> as well as
-<https://github.com/ActiveState/appdirs> to run. Install them via your
+<https://pypi.org/project/platformdirs> to run. Install them via your
 operating system's package manager, pip or even manually.
 
 `tootgroup.py` will guide you through setup by asking all information it needs
