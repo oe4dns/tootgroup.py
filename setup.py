@@ -26,7 +26,7 @@ setuptools.setup(
     ],
     install_requires=[
         "Mastodon.py",
-        "appdirs",
+        "platformdirs",
     ],
     scripts=["tootgroup.py"],
 )
