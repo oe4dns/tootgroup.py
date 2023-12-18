@@ -23,7 +23,7 @@ import requests
 
 import tootgroup_tools
 
-TOOTGROUP_VERSION = tootgroup_tools.version.CURRENT
+TOOTGROUP_VERSION = "1.4.3"
 
 
 def main():
@@ -34,7 +34,7 @@ def main():
 
     # if the "--version" argument has been given, show version and exit.
     if commandline_arguments["show_version"]:
-        tootgroup_tools.version.print_version()
+        print(TOOTGROUP_VERSION)
         sys.exit(0)
 
     # Get the configuration storage location

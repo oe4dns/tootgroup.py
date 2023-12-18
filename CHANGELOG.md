@@ -7,6 +7,21 @@ Change Log
 There is talk that Mastodon might get Group support, so maybe this tool will be obsolete in the not too distant future. We'll see
 about that. tootgroup.py will be supported as long as there is a need for it.
 
+[1.4.3] 2023-12-18
+----------------
+
+### CHANGED
+
+- Modernised build setup and switched from setup.py to pyproject.toml (still using setuptools as its backend) Also provide wheel distribution.
+
+[1.4.2] 2023-12-16
+----------------
+
+### CHANGED
+
+- Switched from appdirs to platformdirs dependency. While the former is not officially deprecated, maintainance seems to have stopped
+   while the platformdirs fork is in active development.
+
 [1.4.1] 2022-06-23
 ----------------
 

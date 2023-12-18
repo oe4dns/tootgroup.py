@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name="tootgroup.py"
+dynamic = ["version"]
+dependencies = [
+    "Mastodon.py",
+    "platformdirs",
+]
+requires-python = ">=3.8"
+authors = [ {name = "Andreas Schreiner", email = "andreas.schreiner@sonnenmulde.at"} ]
+description="Group account features on Mastodon, Pleroma and Friendica"
+readme="README.md"
+keywords=["mastodon", "pleroma", "friendica", "toot", "group", "account", "fediverse"]
+classifiers=[
+    "Environment :: Console",
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/oe4dns/tootgroup.py"
+
+[tool.setuptools]
+script-files = ["tootgroup.py"]
+
+[tool.setuptools.dynamic]
+version = {attr = "tootgroup.TOOTGROUP_VERSION"}
