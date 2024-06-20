@@ -2,7 +2,7 @@
 """tootgroup.py
 
 Andreas Schreiner
-@andis@chaos.social
+@andi@fed.sonnenmulde.at
 andreas.schreiner@sonnenmulde.at
 
 This program is free software: you can redistribute it and/or modify
