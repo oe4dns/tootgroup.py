@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/home/tootgroup/venv/bin/python
 """tootgroup.py
 
 Andreas Schreiner
-@andi@fed.sonnenmulde.at
+@andis@chaos.social
 andreas.schreiner@sonnenmulde.at
 
 This program is free software: you can redistribute it and/or modify
@@ -59,7 +59,7 @@ def main():
     masto = mastodon.Mastodon(
         client_id=config_store["directory"] + my_config[group_name]["client_id"],
         access_token=config_store["directory"] + my_config[group_name]["access_token"],
-        api_base_url=my_config[group_name]["mastodon_instance"],
+        api_base_url=my_config[group_name]["mastodon_instance"], version_check_mode='none'
     )
 
     try:
@@ -104,7 +104,7 @@ def main():
     notification_count = 0
     max_notifications = 100
     max_notification_id = None
-    latest_notification_id = 0
+    latest_notification_id = str(0)
     my_notifications = []
     get_more_notifications = True
 
@@ -119,7 +119,8 @@ def main():
             if len(get_notifications) > 0:
                 latest_notification_id = get_notifications[0].id
             else:  # If there have not been any notifications yet, set value to "0"
-                latest_notification_id = 0
+                # latest_notification_id is already initialized above with the value "0"
+                # latest_notification_id = 0
                 print(
                     "Nothing to do yet! Start interacting with your group account first."
                 )
@@ -131,7 +132,7 @@ def main():
         # Initialize "last_seen_id" on first run. Notifications are ignored up
         # to this point, but newer ones will be considered subsequently.
         if my_config[group_name]["last_seen_id"] == "catch-up":
-            my_config[group_name]["last_seen_id"] = str(latest_notification_id)
+            my_config[group_name]["last_seen_id"] = latest_notification_id
             config_store["write_NEW"] = True
             print("Caught up to current timeline. Run again to start group-tooting.")
 
@@ -139,7 +140,9 @@ def main():
             max_notification_id = notification.id
 
             if (
-                notification.id > int(my_config[group_name]["last_seen_id"])
+                # TODO replace comparision by a function - this breaks mastodon
+                # notification.id > int(my_config[group_name]["last_seen_id"])
+                notification.id > my_config[group_name]["last_seen_id"]
                 and notification_count < max_notifications
             ):
                 my_notifications.append(notification)
@@ -151,8 +154,10 @@ def main():
 
     # If there have been new notifications since the last run, update "last_seen_id"
     # and write config file to persist the new value.
-    if latest_notification_id > int(my_config[group_name]["last_seen_id"]):
-        my_config[group_name]["last_seen_id"] = str(latest_notification_id)
+    # TODO replace comparision by a function - this breaks mastodon
+    # if latest_notification_id > int(my_config[group_name]["last_seen_id"]):
+    if latest_notification_id > my_config[group_name]["last_seen_id"]:
+        my_config[group_name]["last_seen_id"] = latest_notification_id
         config_store["write_NEW"] = True
 
     # Reverse list of notifications so that the oldest are processed first
@@ -180,12 +185,12 @@ def main():
                         if not commandline_arguments["dry_run"]:
                             masto.status_reblog(notification.status.id)
                             print(
-                                "Retooted from notification ID: " + str(notification.id)
+                                "Retooted from notification ID: " + notification.id
                             )
                         else:
                             print(
                                 "DRY RUN - would have retooted from notification ID: "
-                                + str(notification.id)
+                                + notification.id
                             )
 
             # Is reposting of direct messages configured? - if yes then:
@@ -226,12 +231,12 @@ def main():
                             )
                             print(
                                 "Newly posted from DM with notification ID: "
-                                + str(notification.id)
+                                + notification.id
                             )
                         else:
                             print(
                                 "DRY RUN - would have newly posted from DM with notification ID: "
-                                + str(notification.id)
+                                + notification.id
                             )
 
                     # If the DM does not start with the group account's @username it will not
@@ -255,7 +260,7 @@ def main():
                             )
                             print(
                                 "Not posted from DM with notification ID: "
-                                + str(notification.id),
+                                + notification.id,
                                 end="",
                             )
                             print(
@@ -266,7 +271,7 @@ def main():
                         else:
                             print(
                                 "DRY RUN - received DM with notification ID: "
-                                + str(notification.id)
+                                + notification.id
                                 + ", but it did not begin with @"
                                 + my_account["username"]
                                 + "!"
