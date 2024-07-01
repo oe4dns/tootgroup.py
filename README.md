@@ -1,5 +1,4 @@
 
-
 `tootgroup.py` - emulate group accounts on Mastodon and Pleroma
 =================================================
 
@@ -21,8 +20,11 @@ How does it work?
 
 `tootgroup.py` has to be set up on a computer and run periodically. It reads the
 notifications from the Mastodon/Pleroma account it is connected to and filters
-them for messages to repost. There are two methods of creating a group post. One
-or both of them can be enabled during the setup procedure.
+them for messages to repost. The group consists of all user accounts the group
+account is following. Unfollowing accounts, removes users from the group again.
+
+There are two methods of creating a group post. One or both of them can be
+enabled during the setup procedure.
 
 1. Public mentions of group members are boosted if they preceed the group's
    name with an Exclamation Mark like "!@mastodon". For for posts originating
