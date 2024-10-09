@@ -60,6 +60,7 @@ def main():
         client_id=config_store["directory"] + my_config[group_name]["client_id"],
         access_token=config_store["directory"] + my_config[group_name]["access_token"],
         api_base_url=my_config[group_name]["mastodon_instance"],
+        version_check_mode="none",
     )
 
     try:
@@ -139,7 +140,9 @@ def main():
             max_notification_id = notification.id
 
             if (
-                notification.id > int(my_config[group_name]["last_seen_id"])
+                tootgroup_tools.compare_ids(
+                    notification.id, my_config[group_name]["last_seen_id"]
+                )
                 and notification_count < max_notifications
             ):
                 my_notifications.append(notification)
@@ -151,7 +154,9 @@ def main():
 
     # If there have been new notifications since the last run, update "last_seen_id"
     # and write config file to persist the new value.
-    if latest_notification_id > int(my_config[group_name]["last_seen_id"]):
+    if tootgroup_tools.compare_ids(
+        latest_notification_id, my_config[group_name]["last_seen_id"]
+    ):
         my_config[group_name]["last_seen_id"] = str(latest_notification_id)
         config_store["write_NEW"] = True
 
