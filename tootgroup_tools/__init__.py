@@ -1,5 +1,8 @@
 from tootgroup_tools import commandline_arguments, configuration_management
 
+import random
+import string
+
 
 def compare_ids(current_notification_id, stored_notification_id):
     """Fediverse services use different kinds of notification IDs. Some
@@ -14,7 +17,7 @@ def compare_ids(current_notification_id, stored_notification_id):
     Returns: True if the current notification is newer, False if not.
     """
 
-    # Try castint to an integer. If it works, it probably is an integer
+    # Try casting to an integer. If it works, it probably is a number
     # and can be compared as such.
     try:
         cur = int(current_notification_id)
@@ -33,3 +36,10 @@ def compare_ids(current_notification_id, stored_notification_id):
             return True
         else:
             return False
+
+
+def get_random_alphanumeric_string(length):
+    """returns a random alphanumeric string of specified length"""
+    characters = string.ascii_letters + string.digits
+    returnstring = "".join((random.choice(characters) for i in range(length)))
+    return returnstring

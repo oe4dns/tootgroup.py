@@ -4,6 +4,7 @@ and writing."""
 import configparser
 import os
 import sys
+import tootgroup_tools
 
 import platformdirs
 import mastodon
@@ -28,7 +29,9 @@ def new_credentials_from_server(config_store, config):
     try:
         mastodon.Mastodon.create_app(
             "tootgroup.py",
+            scopes=["read", "write"],
             api_base_url=config[group_name]["mastodon_instance"],
+            redirect_uris="urn:ietf:wg:oauth:2.0:oob",
             to_file=config_store["directory"] + config[group_name]["client_id"],
         )
         # Create Mastodon API instance
@@ -47,25 +50,50 @@ def new_credentials_from_server(config_store, config):
         print("##################################################################\n")
         sys.exit(0)
 
-    # Log in once with username and password to get an access token for future logins.
-    # Ask until login succeeds or at most 3 times before the skript gives up.
-    i = 0
-    while i < 3:
-        i += 1
+    # Try to log in once with username and password to get an access token for future logins.
+    # This might fail due to wrong user entry of because username/password login is not
+    # supported. In any case, if an error occurs, try logging in via OAuth instead. Only
+    # if this also fails, exit the script with an error message asking the user to try again.
+    try:
+        masto.log_in(
+            input("Username (e-Mail) to log into Mastodon Instance: "),
+            input("Password: "),
+            scopes=["read", "write"],
+            redirect_uri="urn:ietf:wg:oauth:2.0:oob",
+            to_file=config_store["directory"] + config[group_name]["access_token"],
+        )
+    except:
+        print("\nEither Username and/or Password did not match or the server")
+        print("permits only OAuth logins. So we're trying OAuth next...")
+
+        goto_url = masto.auth_request_url(
+            client_id=config_store["directory"] + config[group_name]["client_id"],
+            redirect_uris="urn:ietf:wg:oauth:2.0:oob",
+            state=tootgroup_tools.get_random_alphanumeric_string(11),
+            scopes=["read", "write"],
+        )
+
+        print("\nPlease open the following URL in your webbrowser, authorize")
+        print("this application's access and copy the resulting access token")
+        print("to the prompt below.\n")
+        print("Authorization URL:")
+        print(goto_url)
+        print("\n")
+
         try:
             masto.log_in(
-                input("Username (e-Mail) to log into Mastodon Instance: "),
-                input("Password: "),
+                code=input("Access Token from Web: "),
+                scopes=["read", "write"],
+                redirect_uri="urn:ietf:wg:oauth:2.0:oob",
                 to_file=config_store["directory"] + config[group_name]["access_token"],
             )
-            break
-        except Exception:
-            print("\nUsername and/or Password did not match!")
-            if i < 3:
-                print("Please enter them again.\n")
-            else:
-                print("tootgroup.py will exit now. Run it again to try once more!\n")
-                sys.exit(0)
+        except:
+            print("\nERROR!")
+            print(
+                "Neither Username/Password, nore OAuth authentication were successful."
+            )
+            print("tootgroup.py will exit now. Run it again to try once more.")
+            sys.exit(0)
 
 
 def parse_configuration(config_store):
