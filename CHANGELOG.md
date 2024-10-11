@@ -5,7 +5,25 @@ Change Log
 ----------
 
 There is talk that Mastodon might get Group support, so maybe this tool will be obsolete in the not too distant future. We'll see
-about that. tootgroup.py will be supported as long as there is a need for it.
+about that. tootgroup.py will be supported as long as there is a need for it - For Mastodon and/or other Fediverse services.
+
+[1.5] 2024-10-12
+----------------
+
+### ADDED
+
+- Compatibility with GoToSocial (tested) and possibly other Fediverse services (untested).
+- OAuth support for registering the tootgroup.py application with servers (needed for GoToSocial but also works with other
+   services)
+
+### CHANGED
+
+- There are no more retries while registering the application with username/password. Instead an OAuth fallback is invoked.
+  If this also fails, you have to retry manually.
+
+### FIXED
+
+- [GoToSocial](<https://github.com/oe4dns/tootgroup.py/issues/10>)
 
 [1.4.3] 2023-12-18
 ----------------

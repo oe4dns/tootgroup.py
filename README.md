@@ -1,25 +1,33 @@
 
-`tootgroup.py` - emulate group accounts on Mastodon and Pleroma
+`tootgroup.py` - Group accounts on Fediverse services that don't support them natively.
 =================================================
+
+Tested to be compatible with:
+------------
+
+``Hosting groups:`` Mastodon, Pleroma and GoToSocial - others will probably work too.
+
+``Posting to groups:`` Mastodon, Pleroma GoToSocial and Friendica - others will
+                       very likely work.
 
 What is this?
 -------------
 
-Some social media platforms allow groups of users to post into a unified "group"
-timeline/instance/whatever you want to call it. This is currently not possible
-on Mastodon or Pleroma without giving all members full login credentials to a
-group. `tootgroup.py` is an attempt to solve this specific use case.
+Some federated social media platforms allow groups of users to post into a
+unified "group" timeline/instance/whatever you want to call it. This is currently
+not possible on Mastodon or other services that are styled after it, except by
+giving all members full login credentials to a group. `tootgroup.py` is an
+attempt to solve this specific use case.
 
-tootgroup.py groups can be hosted on Mastodon or Pleroma. But you can post
-TO the group FROM any ActivityPub service although there might be some
-incompatibilities. Currently Mastodon, Pleroma and Friendica are tested platforms
-for posting TO the group. More tests are welcome!
+`tootgroup.py` groups can be hosted on a variety of services that are compatible
+with the Mastodon API. All tested platforms are listed above, more will very
+likely work just as good and all tests are welcome!
 
 How does it work?
 -----------------
 
 `tootgroup.py` has to be set up on a computer and run periodically. It reads the
-notifications from the Mastodon/Pleroma account it is connected to and filters
+notifications from the Fediverse account it is connected to and filters
 them for messages to repost. The group consists of all user accounts the group
 account is following. Unfollowing accounts, removes users from the group again.
 
@@ -43,7 +51,7 @@ anything.
 But how to simply use it?
 -------------------------
 
-### Mastodon/Pleroma
+### Mastodon/Pleroma/GoToSocial and others
 
 1. Write a message that should be boosted by the group:
    Just include "!@group_name" anywhere in the toot.
@@ -65,8 +73,8 @@ this is fully supported, tested and in daily use.
    Friendica handles the Exclamation Mark in a special way because it is also
    used to address the Friendica Forum functionality. Therefore the Asterisk is
    used instead of the Exclamation Mark. Just include "*@group_name" anywhere in
-   the message. - This would also work in Mastodon/Pleroma, just don't tell them
-   ;-)
+   the message. - This would also work with other services like Mastodon, just
+   don't tell them ;-)
 
    EXAMPLE (from Friendica): "OHAI! just found that *@mastodon thingie!"
 
@@ -99,13 +107,13 @@ when you run it from the commandline for the first time. Being somewhat
 comfortable with Python scripting and the commandline in general might help
 if difficulties should appear.
 
-1. You need an account on any Mastodon or Pleroma instance that will act as
+1. You need an account on any Fediverse instance that will act as
    your group account. Think about if you should mark it as a "Bot".
 
 2. Run `tootgroup.py` from the command line.
 
 3. `tootgroup.py` will ask you for all needed setup data and try to get them
-   right by connecting to the Mastodon/Pleroma server. If it cannot do so, it
+   right by connecting to the Fediverse server. If it cannot do so, it
    will tell you and you can retry. When successful, `tootgroup.py` will write
    the configuration to its tootgroup.conf file and read it from there next
    time you run the script.

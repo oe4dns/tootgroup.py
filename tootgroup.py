@@ -23,7 +23,7 @@ import requests
 
 import tootgroup_tools
 
-TOOTGROUP_VERSION = "1.4.3"
+TOOTGROUP_VERSION = "1.5"
 
 
 def main():
@@ -40,7 +40,7 @@ def main():
     # Get the configuration storage location
     config_store = tootgroup_tools.configuration_management.setup_configuration_store()
 
-    # Get the Mastodon/Pleroma account handle the script is running for.
+    # Get the handle for the account the script has been invoked with.
     config_store["group_name"] = commandline_arguments["group_name"]
     group_name = config_store["group_name"]
 
@@ -65,8 +65,8 @@ def main():
 
     try:
         # Get the group account information.
-        # This connects to the Mastodon or Pleroma server for the first time at
-        # every tootgroup.py's run.
+        # This connects to the Fediverse server for the first time at
+        # every tootgroup.py's invocation.
         my_account = {
             "username": masto.account_verify_credentials().username,
             "id": masto.account_verify_credentials().id,
@@ -75,7 +75,7 @@ def main():
     except Exception as ex:
         print("")
         print("\n########################################################")
-        print("tootgroup.py could not connect to the Mastodon or Pleroma")
+        print("tootgroup.py could not connect to the Fediverse server")
         print("instance. If you know that it is running, there might be a")
         print("problem with your local configuration. Check the error")
         print("message for more details:")
@@ -86,7 +86,7 @@ def main():
         sys.exit(0)
 
     # Get group member IDs. They can not be fetched directly when
-    # connecting to the Mastodon server.
+    # connecting to the Fediverse server.
     #
     # limit=sys.maxsize is set here because Pleroma only returns 20 Member if
     # the standard limit=None value is used!
@@ -305,8 +305,8 @@ def media_toot_again(orig_media_dict, mastodon_instance):
     videos) in a new toot. This function downloads all media files from a toot
     and re-uploads them. It then returns a dict formatted in a proper way to
     be used by the Mastodon.status_post() function.
-    It also works with Pleroma this way altough it has not been tested if there
-    would be another, more "direct" solution with that software."""
+    It also works with Pleroma and others this way, altough it has not been tested
+    if there would be another, more "direct" solution with alternative services."""
     new_media_dict = []
     for media in orig_media_dict:
         media_data = requests.get(media.url).content

@@ -11,7 +11,7 @@ import mastodon
 
 
 def new_credentials_from_server(config_store, config):
-    """Register tootgroup.py at a Mastodon (or Pleroma) server and get
+    """Register tootgroup.py at a compatible Fediverse server and get
     user credentials.
 
     "config_store" dictionary containting config file name and path as
@@ -25,7 +25,7 @@ def new_credentials_from_server(config_store, config):
     """
     group_name = config_store["group_name"]
 
-    # Register tootgroup.py app at the Mastodon server
+    # Register tootgroup.py app at the Fediverse server
     try:
         mastodon.Mastodon.create_app(
             "tootgroup.py",
@@ -42,7 +42,7 @@ def new_credentials_from_server(config_store, config):
     except Exception as ex:
         print("")
         print("\n##################################################################")
-        print("The Mastodon instance URL is wrong or the server does not respond.")
+        print("The Fediverse instance URL is wrong or the server does not respond.")
         print("See the error message for more details:")
         print(ex)
         print("")
@@ -51,12 +51,12 @@ def new_credentials_from_server(config_store, config):
         sys.exit(0)
 
     # Try to log in once with username and password to get an access token for future logins.
-    # This might fail due to wrong user entry of because username/password login is not
+    # This might fail due to wrong user entry or because username/password login is not
     # supported. In any case, if an error occurs, try logging in via OAuth instead. Only
-    # if this also fails, exit the script with an error message asking the user to try again.
+    # when this also fails, exit the script with an error message telling the user to try again.
     try:
         masto.log_in(
-            input("Username (e-Mail) to log into Mastodon Instance: "),
+            input("Username (e-Mail) to log into the Fediverse Instance: "),
             input("Password: "),
             scopes=["read", "write"],
             redirect_uri="urn:ietf:wg:oauth:2.0:oob",
@@ -73,7 +73,7 @@ def new_credentials_from_server(config_store, config):
             scopes=["read", "write"],
         )
 
-        print("\nPlease open the following URL in your webbrowser, authorize")
+        print("\nPlease open the following URL in your webbrowser, then authorize")
         print("this application's access and copy the resulting access token")
         print("to the prompt below.\n")
         print("Authorization URL:")
@@ -128,15 +128,15 @@ def parse_configuration(config_store):
         config_store["write_NEW"] = True
         config_store["first_run"] = True
 
-    # Do we have a mastodon instance URL? If not, we have to
+    # Do we have a Fediverse instance URL? If not, we have to
     # ask for it and register with our group's server first.
     if not config.has_option(group_name, "mastodon_instance"):
         config[group_name]["mastodon_instance"] = ""
-        print("We need a Mastodon server to connect to!")
+        print("We need a Fediverse server to connect to!")
     if config[group_name]["mastodon_instance"] == "":
         config[group_name]["mastodon_instance"] = input(
             "Enter the "
-            "URL of the Mastodon instance your group account is "
+            "URL of the Fediverse instance your group account is "
             "running on: "
         )
         get_new_credentials = True
@@ -220,7 +220,7 @@ def parse_configuration(config_store):
         config_store["write_NEW"] = True
 
     # Some registration info or credentials were missing - we have to register
-    # tootgroup.py with our Mastodon server instance. (again?)
+    # tootgroup.py with our Fediverse server instance. (again?)
     if get_new_credentials:
         print("Some credentials are missing, need to get new ones...")
         new_credentials_from_server(config_store, config)

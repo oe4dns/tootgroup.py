@@ -11,9 +11,9 @@ dependencies = [
 ]
 requires-python = ">=3.8"
 authors = [ {name = "Andreas Schreiner", email = "andreas.schreiner@sonnenmulde.at"} ]
-description="Group account features on Mastodon, Pleroma and Friendica"
+description="Group account features on Mastodon and many other Fediverse platforms "
 readme="README.md"
-keywords=["mastodon", "pleroma", "friendica", "toot", "group", "account", "fediverse"]
+keywords=["mastodon", "pleroma", "friendica", "gotosocial", "toot", "group", "account", "fediverse"]
 classifiers=[
     "Environment :: Console",
     "Development Status :: 5 - Production/Stable",

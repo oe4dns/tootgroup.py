@@ -47,11 +47,11 @@ def parse_arguments():
         "-g",
         "--group",
         default="default",
-        help="Input a handle for the Mastodon account. tootgroup.py stores all "
+        help="Input a handle for the Fediverse account. tootgroup.py stores all "
         + "information connected to a specific group account under this name. "
         + "By choosing different handles it is possible to manage multiple "
-        + "Mastodon groups from the same skript. This can be chosen freely but "
-        + " it is wise to use a name that is related to the Mastodon account "
+        + "groups from the same skript. The handle can be chosen freely but "
+        + " it is wise to use a name that is related to the Fediverse account "
         + " it will be used with. If no handle is given, "
         + '"%(default)s" is always used instead.',
     )
