@@ -35,8 +35,8 @@ There are two methods of creating a group post. One or both of them can be
 enabled during the setup procedure.
 
 1. Public mentions of group members are boosted if they preceed the group's
-   name with an Exclamation Mark like "!@mastodon". For for posts originating
-   from Friendica the correct syntax is "!mastodon".
+   name with an Exclamation Mark like "!@mastodon". For posts originating
+   from Friendica, the correct syntax is "!mastodon".
 
 2. `tootgroup.py` can also look for direct messages from group members. If the
    group is @mentioned at the very beginning, The message will be reposted as
